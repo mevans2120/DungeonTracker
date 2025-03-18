@@ -430,10 +430,10 @@ function CharacterCard({
 
   return (
     <div
-      className={`p-4 rounded-lg border group ${
+      className={`p-4 rounded-lg border group transition-all duration-200 ease-in-out hover:shadow-md hover:-translate-y-[2px] ${
         isCurrentTurn
           ? "bg-primary/5 border-primary"
-          : "bg-card"
+          : "bg-card hover:bg-card/80"
       }`}
     >
       <div className="flex items-center gap-4">
@@ -476,7 +476,7 @@ function CharacterCard({
             <Button
               variant="ghost"
               size="icon"
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             >
               <Settings2 className="h-4 w-4" />
             </Button>
