@@ -318,17 +318,73 @@ export default function Home() {
               No characters in combat
             </div>
           ) : (
-            <div className="space-y-2">
-              {sortedCharacters.map((char) => (
-                <CharacterCard
-                  key={char.id}
-                  character={char}
-                  isCurrentTurn={currentCharacter?.id === char.id}
-                  onUpdateHp={updateHp.mutate}
-                  onUpdateInitiative={updateInitiative.mutate}
-                  onRemove={removeCharacter.mutate}
-                />
-              ))}
+            <div className="space-y-6">
+              {!sortByInitiative ? (
+                // Show all characters in pure initiative order
+                <div className="space-y-2">
+                  {sortedCharacters.map((char) => (
+                    <CharacterCard
+                      key={char.id}
+                      character={char}
+                      isCurrentTurn={currentCharacter?.id === char.id}
+                      onUpdateHp={updateHp.mutate}
+                      onUpdateInitiative={updateInitiative.mutate}
+                      onRemove={removeCharacter.mutate}
+                    />
+                  ))}
+                </div>
+              ) : (
+                // Group by PC/NPC with headers
+                <>
+                  {/* Player Characters Section */}
+                  {sortedCharacters.some(char => !char.isNpc) && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
+                        <Users className="h-4 w-4" />
+                        Player Characters
+                      </div>
+                      <div className="space-y-2">
+                        {sortedCharacters
+                          .filter(char => !char.isNpc)
+                          .map((char) => (
+                            <CharacterCard
+                              key={char.id}
+                              character={char}
+                              isCurrentTurn={currentCharacter?.id === char.id}
+                              onUpdateHp={updateHp.mutate}
+                              onUpdateInitiative={updateInitiative.mutate}
+                              onRemove={removeCharacter.mutate}
+                            />
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Non-Player Characters Section */}
+                  {sortedCharacters.some(char => char.isNpc) && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
+                        <Skull className="h-4 w-4" />
+                        Non-Player Characters
+                      </div>
+                      <div className="space-y-2">
+                        {sortedCharacters
+                          .filter(char => char.isNpc)
+                          .map((char) => (
+                            <CharacterCard
+                              key={char.id}
+                              character={char}
+                              isCurrentTurn={currentCharacter?.id === char.id}
+                              onUpdateHp={updateHp.mutate}
+                              onUpdateInitiative={updateInitiative.mutate}
+                              onRemove={removeCharacter.mutate}
+                            />
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </CardContent>
