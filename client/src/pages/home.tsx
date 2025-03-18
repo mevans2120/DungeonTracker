@@ -13,6 +13,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import {
   AlertDialog,
@@ -33,7 +39,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Sword, Trash2, ChevronRight, Heart, Shield, Users, Skull, Plus, SortAsc, Group } from "lucide-react";
+import { Sword, Trash2, ChevronRight, Heart, Shield, Users, Skull, Plus, SortAsc, Group, ChevronDown } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -286,24 +292,34 @@ export default function Home() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-4">
             <CardTitle>Initiative Order</CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-2"
-              onClick={() => setSortByInitiative(!sortByInitiative)}
-            >
-              {!sortByInitiative ? (
-                <>
-                  <SortAsc className="h-4 w-4" />
-                  <span className="text-sm">Sort by Initiative</span>
-                </>
-              ) : (
-                <>
-                  <Group className="h-4 w-4" />
-                  <span className="text-sm">Group by Type</span>
-                </>
-              )}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  {sortByInitiative ? (
+                    <>
+                      <Group className="h-4 w-4" />
+                      <span className="text-sm">Grouped by Type</span>
+                    </>
+                  ) : (
+                    <>
+                      <SortAsc className="h-4 w-4" />
+                      <span className="text-sm">Initiative Order</span>
+                    </>
+                  )}
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => setSortByInitiative(false)}>
+                  <SortAsc className="h-4 w-4 mr-2" />
+                  Initiative Order
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortByInitiative(true)}>
+                  <Group className="h-4 w-4 mr-2" />
+                  Group by Type
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <Button onClick={nextTurn} disabled={characters.length === 0}>
             Next Turn
