@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 const DEFAULT_TUTORIAL_STEPS = [
   {
     stepId: 0,
+    id:0, // Added id field for consistency.  This assumes the backend now provides an id.
     title: "Welcome to DungeonTracker!",
     description: "This quick tutorial will show you how to manage combat in your D&D game.",
     content: (
@@ -43,6 +44,7 @@ const DEFAULT_TUTORIAL_STEPS = [
   },
   {
     stepId: 1,
+    id:1, // Added id field for consistency.  This assumes the backend now provides an id.
     title: "Adding Characters",
     description: "Start by adding your players and monsters to the combat.",
     content: (
@@ -61,6 +63,7 @@ const DEFAULT_TUTORIAL_STEPS = [
   },
   {
     stepId: 2,
+    id:2, // Added id field for consistency.  This assumes the backend now provides an id.
     title: "Initiative Order",
     description: "Characters are automatically sorted by initiative.",
     content: (
@@ -77,6 +80,7 @@ const DEFAULT_TUTORIAL_STEPS = [
   },
   {
     stepId: 3,
+    id:3, // Added id field for consistency.  This assumes the backend now provides an id.
     title: "Managing HP",
     description: "Keep track of damage and healing.",
     content: (
@@ -92,6 +96,7 @@ const DEFAULT_TUTORIAL_STEPS = [
   },
   {
     stepId: 4,
+    id:4, // Added id field for consistency.  This assumes the backend now provides an id.
     title: "Ready to Play!",
     description: "You're all set to start tracking combat.",
     content: (
@@ -170,9 +175,17 @@ export function Tutorial() {
     if (!editingStep) return;
 
     updateTutorial.mutate({
-      id: editingStep.stepId, // Assuming stepId is the ID. Adjust if necessary.
+      id: editingStep.id, // Use the database ID
       title: editingStep.title,
       description: editingStep.description,
+    }, {
+      onError: (error) => {
+        toast({
+          title: "Error updating tutorial",
+          description: "Failed to save changes. Please try again.",
+          variant: "destructive",
+        });
+      }
     });
   };
 
