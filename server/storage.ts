@@ -14,8 +14,7 @@ export interface IStorage {
   // Tutorial content methods
   getTutorialContent(): Promise<TutorialContent[]>;
   createTutorialContent(content: InsertTutorialContent): Promise<TutorialContent>;
-  updateTutorialContent(id: number, content: Partial<TutorialContent>): Promise<TutorialContent>;
-  clearTutorialContent(): Promise<void>;
+  updateTutorialContent(id: number, content: Partial<InsertTutorialContent>): Promise<TutorialContent>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -84,7 +83,7 @@ export class DatabaseStorage implements IStorage {
     return tutorial;
   }
 
-  async updateTutorialContent(id: number, content: Partial<TutorialContent>): Promise<TutorialContent> {
+  async updateTutorialContent(id: number, content: Partial<InsertTutorialContent>): Promise<TutorialContent> {
     const [tutorial] = await db
       .update(tutorialContent)
       .set({
@@ -98,10 +97,6 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Tutorial content not found");
     }
     return tutorial;
-  }
-
-  async clearTutorialContent(): Promise<void> {
-    await db.delete(tutorialContent);
   }
 }
 

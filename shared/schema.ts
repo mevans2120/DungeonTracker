@@ -18,8 +18,8 @@ export const tutorialContent = pgTable("tutorial_content", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   content: json("content").notNull(),
-  createdAt: text("created_at").notNull().default(new Date().toISOString()),
-  updatedAt: text("updated_at").notNull().default(new Date().toISOString()),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
 });
 
 export const insertCharacterSchema = createInsertSchema(characters)
