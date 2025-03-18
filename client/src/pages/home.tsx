@@ -14,8 +14,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Sword, Trash2, ChevronRight, Heart, Shield, Users, Skull } from "lucide-react";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Sword, Trash2, ChevronRight, Heart, Shield, Users, Skull, Plus } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +41,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function Home() {
   const { toast } = useToast();
   const [currentTurn, setCurrentTurn] = useState(0);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const { data: characters = [], isLoading } = useQuery<Character[]>({
     queryKey: ["/api/characters"],
@@ -45,6 +64,7 @@ export default function Home() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
       form.reset();
+      setAddDialogOpen(false);
       toast({
         title: "Character added",
         description: "The character has been added to combat",
@@ -111,196 +131,205 @@ export default function Home() {
           Combat Tracker
         </h1>
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive">Reset Combat</Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Reset Combat?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will remove all characters from combat. This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => resetCombat.mutate()}>
-                Reset
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div className="flex gap-2">
+          <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add to Combat
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Character</DialogTitle>
+                <DialogDescription>
+                  Add a new character to the combat tracker
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Character name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="initiative"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Initiative</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Initiative roll"
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="currentHp"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Current HP</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Current hit points"
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="maxHp"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Max HP (optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Maximum hit points"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value ? parseInt(e.target.value) : undefined
+                              )
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="isNpc"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between">
+                        <FormLabel>NPC</FormLabel>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={addCharacter.isPending}
+                  >
+                    Add to Combat
+                  </Button>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">Reset Combat</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset Combat?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will remove all characters from combat. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => resetCombat.mutate()}>
+                  Reset
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Add Character</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Character name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="initiative"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Initiative</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Initiative roll"
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="currentHp"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Current HP</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Current hit points"
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="maxHp"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Max HP (optional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Maximum hit points"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ? parseInt(e.target.value) : undefined
-                            )
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="isNpc"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <FormLabel>NPC</FormLabel>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={addCharacter.isPending}
-                >
-                  Add to Combat
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Initiative Order</CardTitle>
-            <Button onClick={nextTurn} disabled={characters.length === 0}>
-              Next Turn
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-4">Loading...</div>
-            ) : characters.length === 0 ? (
-              <div className="text-center py-4 text-muted-foreground">
-                No characters in combat
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {pcs.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
-                      <Users className="h-4 w-4" />
-                      Player Characters
-                    </div>
-                    <div className="space-y-2">
-                      {pcs.map((char, index) => (
-                        <CharacterCard
-                          key={char.id}
-                          character={char}
-                          isCurrentTurn={index === currentTurn}
-                          onUpdateHp={updateHp.mutate}
-                          onUpdateInitiative={updateInitiative.mutate}
-                          onRemove={removeCharacter.mutate}
-                        />
-                      ))}
-                    </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Initiative Order</CardTitle>
+          <Button onClick={nextTurn} disabled={characters.length === 0}>
+            Next Turn
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-4">Loading...</div>
+          ) : characters.length === 0 ? (
+            <div className="text-center py-4 text-muted-foreground">
+              No characters in combat
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {pcs.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
+                    <Users className="h-4 w-4" />
+                    Player Characters
                   </div>
-                )}
-
-                {npcs.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
-                      <Skull className="h-4 w-4" />
-                      Non-Player Characters
-                    </div>
-                    <div className="space-y-2">
-                      {npcs.map((char, index) => (
-                        <CharacterCard
-                          key={char.id}
-                          character={char}
-                          isCurrentTurn={index === currentTurn}
-                          onUpdateHp={updateHp.mutate}
-                          onUpdateInitiative={updateInitiative.mutate}
-                          onRemove={removeCharacter.mutate}
-                        />
-                      ))}
-                    </div>
+                  <div className="space-y-2">
+                    {pcs.map((char, index) => (
+                      <CharacterCard
+                        key={char.id}
+                        character={char}
+                        isCurrentTurn={index === currentTurn}
+                        onUpdateHp={updateHp.mutate}
+                        onUpdateInitiative={updateInitiative.mutate}
+                        onRemove={removeCharacter.mutate}
+                      />
+                    ))}
                   </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                </div>
+              )}
+
+              {npcs.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
+                    <Skull className="h-4 w-4" />
+                    Non-Player Characters
+                  </div>
+                  <div className="space-y-2">
+                    {npcs.map((char, index) => (
+                      <CharacterCard
+                        key={char.id}
+                        character={char}
+                        isCurrentTurn={index === currentTurn}
+                        onUpdateHp={updateHp.mutate}
+                        onUpdateInitiative={updateInitiative.mutate}
+                        onRemove={removeCharacter.mutate}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
