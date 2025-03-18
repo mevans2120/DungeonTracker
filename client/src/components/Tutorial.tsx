@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { queryClient } from "@/lib/queryClient";
 
 // Default tutorial steps that will be used if no content is stored
 const DEFAULT_TUTORIAL_STEPS = [
@@ -106,9 +105,11 @@ const DEFAULT_TUTORIAL_STEPS = [
 ];
 
 export function Tutorial() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => {
+    // Only show tutorial on first visit
+    return !localStorage.getItem("hasSeenTutorial");
+  });
   const [currentStep, setCurrentStep] = useState(0);
-  const [hasSeenTutorial, setHasSeenTutorial] = useState(false);
 
   const { data: tutorialSteps = DEFAULT_TUTORIAL_STEPS, isLoading } = useQuery({
     queryKey: ["/api/tutorial"],
@@ -122,18 +123,8 @@ export function Tutorial() {
     }
   });
 
-  useEffect(() => {
-    const seen = localStorage.getItem("hasSeenTutorial");
-    if (!seen) {
-      setOpen(true);
-    } else {
-      setHasSeenTutorial(true);
-    }
-  }, []);
-
   const handleFinish = () => {
     localStorage.setItem("hasSeenTutorial", "true");
-    setHasSeenTutorial(true);
     setOpen(false);
     setCurrentStep(0);
   };

@@ -1,4 +1,6 @@
-import { type Character, type InsertCharacter, type TutorialContent, type InsertTutorialContent } from "@shared/schema";
+import { type Character, type InsertCharacter, type TutorialContent, type InsertTutorialContent, characters, tutorialContent } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Character methods
@@ -15,99 +17,87 @@ export interface IStorage {
   updateTutorialContent(id: number, content: Partial<InsertTutorialContent>): Promise<TutorialContent>;
 }
 
-export class MemStorage implements IStorage {
-  private characters: Map<number, Character>;
-  private tutorialContent: Map<number, TutorialContent>;
-  private currentId: number;
-  private currentTutorialId: number;
-
-  constructor() {
-    this.characters = new Map();
-    this.tutorialContent = new Map();
-    this.currentId = 1;
-    this.currentTutorialId = 1;
-  }
-
-  // Existing character methods remain unchanged
+export class DatabaseStorage implements IStorage {
+  // Character methods
   async getCharacters(): Promise<Character[]> {
-    return Array.from(this.characters.values())
-      .sort((a, b) => b.initiative - a.initiative);
+    return await db.select().from(characters).orderBy(characters.initiative);
   }
 
   async createCharacter(insertChar: InsertCharacter): Promise<Character> {
-    const id = this.currentId++;
-    const character: Character = {
-      ...insertChar,
-      id,
-      isNpc: insertChar.isNpc ?? false,
-      maxHp: insertChar.maxHp ?? null
-    };
-    this.characters.set(id, character);
+    const [character] = await db.insert(characters).values(insertChar).returning();
     return character;
   }
 
   async updateCharacterHp(id: number, currentHp: number): Promise<Character> {
-    const character = this.characters.get(id);
+    const [character] = await db
+      .update(characters)
+      .set({ currentHp })
+      .where(eq(characters.id, id))
+      .returning();
+
     if (!character) {
       throw new Error("Character not found");
     }
-    const updated = { ...character, currentHp };
-    this.characters.set(id, updated);
-    return updated;
+    return character;
   }
 
   async updateCharacterInitiative(id: number, initiative: number): Promise<Character> {
-    const character = this.characters.get(id);
+    const [character] = await db
+      .update(characters)
+      .set({ initiative })
+      .where(eq(characters.id, id))
+      .returning();
+
     if (!character) {
       throw new Error("Character not found");
     }
-    const updated = { ...character, initiative };
-    this.characters.set(id, updated);
-    return updated;
+    return character;
   }
 
   async deleteCharacter(id: number): Promise<void> {
-    if (!this.characters.delete(id)) {
+    const result = await db.delete(characters).where(eq(characters.id, id));
+    if (!result) {
       throw new Error("Character not found");
     }
   }
 
   async deleteAllCharacters(): Promise<void> {
-    this.characters.clear();
+    await db.delete(characters);
   }
 
-  // New tutorial content methods
+  // Tutorial content methods
   async getTutorialContent(): Promise<TutorialContent[]> {
-    return Array.from(this.tutorialContent.values())
-      .sort((a, b) => a.stepId - b.stepId);
+    return await db.select().from(tutorialContent).orderBy(tutorialContent.stepId);
   }
 
   async createTutorialContent(content: InsertTutorialContent): Promise<TutorialContent> {
-    const id = this.currentTutorialId++;
     const now = new Date().toISOString();
-    const tutorialContent: TutorialContent = {
-      ...content,
-      id,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.tutorialContent.set(id, tutorialContent);
-    return tutorialContent;
+    const [tutorial] = await db
+      .insert(tutorialContent)
+      .values({
+        ...content,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+    return tutorial;
   }
 
   async updateTutorialContent(id: number, content: Partial<InsertTutorialContent>): Promise<TutorialContent> {
-    const existing = this.tutorialContent.get(id);
-    if (!existing) {
+    const [tutorial] = await db
+      .update(tutorialContent)
+      .set({
+        ...content,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(tutorialContent.id, id))
+      .returning();
+
+    if (!tutorial) {
       throw new Error("Tutorial content not found");
     }
-    const updated = {
-      ...existing,
-      ...content,
-      updatedAt: new Date().toISOString(),
-    };
-    this.tutorialContent.set(id, updated);
-    return updated;
+    return tutorial;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
