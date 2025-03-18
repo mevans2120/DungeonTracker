@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { HelpCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { HelpCircle, Pencil } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -18,6 +20,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 // Default tutorial steps that will be used if no content is stored
 const DEFAULT_TUTORIAL_STEPS = [
@@ -105,11 +109,12 @@ const DEFAULT_TUTORIAL_STEPS = [
 ];
 
 export function Tutorial() {
+  const { toast } = useToast();
   const [open, setOpen] = useState(() => {
-    // Only show tutorial on first visit
     return !localStorage.getItem("hasSeenTutorial");
   });
   const [currentStep, setCurrentStep] = useState(0);
+  const [editingStep, setEditingStep] = useState<typeof DEFAULT_TUTORIAL_STEPS[0] | null>(null);
 
   const { data: tutorialSteps = DEFAULT_TUTORIAL_STEPS, isLoading } = useQuery({
     queryKey: ["/api/tutorial"],
@@ -121,6 +126,20 @@ export function Tutorial() {
       const data = await response.json();
       return data.length > 0 ? data : DEFAULT_TUTORIAL_STEPS;
     }
+  });
+
+  const updateTutorial = useMutation({
+    mutationFn: async (data: { id: number; title: string; description: string }) => {
+      return apiRequest("PATCH", `/api/tutorial/${data.id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tutorial"] });
+      toast({
+        title: "Tutorial updated",
+        description: "The tutorial content has been updated successfully.",
+      });
+      setEditingStep(null);
+    },
   });
 
   const handleFinish = () => {
@@ -143,6 +162,20 @@ export function Tutorial() {
     }
   };
 
+  const handleEdit = (step: typeof DEFAULT_TUTORIAL_STEPS[0]) => {
+    setEditingStep(step);
+  };
+
+  const handleSave = () => {
+    if (!editingStep) return;
+
+    updateTutorial.mutate({
+      id: editingStep.stepId, // Assuming stepId is the ID. Adjust if necessary.
+      title: editingStep.title,
+      description: editingStep.description,
+    });
+  };
+
   if (isLoading) {
     return null;
   }
@@ -161,11 +194,20 @@ export function Tutorial() {
         </DialogTrigger>
         <DialogContent className="max-w-lg">
           <Card>
-            <CardHeader>
-              <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
-              <CardDescription>
-                {tutorialSteps[currentStep].description}
-              </CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between">
+              <div>
+                <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
+                <CardDescription>
+                  {tutorialSteps[currentStep].description}
+                </CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleEdit(tutorialSteps[currentStep])}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
             </CardHeader>
             <CardContent>
               {tutorialSteps[currentStep].content}
@@ -183,6 +225,49 @@ export function Tutorial() {
               </Button>
             </CardFooter>
           </Card>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={editingStep !== null} onOpenChange={(open) => !open && setEditingStep(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Tutorial Step</DialogTitle>
+            <DialogDescription>
+              Edit the title and description for this tutorial step.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Title</label>
+              <Input
+                value={editingStep?.title || ""}
+                onChange={(e) =>
+                  setEditingStep(prev =>
+                    prev ? { ...prev, title: e.target.value } : null
+                  )
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                value={editingStep?.description || ""}
+                onChange={(e) =>
+                  setEditingStep(prev =>
+                    prev ? { ...prev, description: e.target.value } : null
+                  )
+                }
+              />
+            </div>
+            <Button
+              className="w-full"
+              onClick={handleSave}
+              disabled={updateTutorial.isPending}
+            >
+              Save Changes
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>
