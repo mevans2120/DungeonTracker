@@ -39,7 +39,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Sword, Trash2, ChevronRight, Heart, Shield, Users, Skull, Plus, SortAsc, Group, ChevronDown } from "lucide-react";
+import { Sword, Trash2, ChevronRight, Heart, Shield, Users, Skull, Plus, SortAsc, Group, ChevronDown, Settings2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -416,6 +416,24 @@ function CharacterCard({
   onUpdateInitiative: (data: { id: number; initiative: number }) => void;
   onRemove: (id: number) => void;
 }) {
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [maxHp, setMaxHp] = useState(character.maxHp);
+
+  const form = useForm({
+    defaultValues: {
+      maxHp: character.maxHp || undefined,
+    },
+  });
+
+  const handleMaxHpChange = (value: number | undefined) => {
+    // Update local state
+    setMaxHp(value || null);
+    // Update HP in parent component
+    if (character.currentHp > (value || 0)) {
+      onUpdateHp({ id: character.id, hp: value || 0 });
+    }
+  };
+
   return (
     <div
       className={`p-4 rounded-lg border group ${
@@ -451,21 +469,73 @@ function CharacterCard({
                 }
               }}
             />
-            {character.maxHp && (
+            {maxHp && (
               <span className="text-sm text-muted-foreground">
-                /{character.maxHp}
+                /{maxHp}
               </span>
             )}
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onRemove(character.id)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Settings2 className="h-4 w-4" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit {character.name}</DialogTitle>
+              <DialogDescription>
+                Adjust maximum HP or remove this character from combat.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <FormLabel>Maximum HP</FormLabel>
+                <Input
+                  type="number"
+                  placeholder="Maximum hit points"
+                  value={maxHp || ""}
+                  onChange={(e) => {
+                    const value = e.target.value ? parseInt(e.target.value) : undefined;
+                    handleMaxHpChange(value);
+                  }}
+                />
+              </div>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Remove from Combat
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remove {character.name}?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will remove {character.name} from combat. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => {
+                      onRemove(character.id);
+                      setEditDialogOpen(false);
+                    }}>
+                      Remove
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
