@@ -4,6 +4,7 @@ export interface IStorage {
   getCharacters(): Promise<Character[]>;
   createCharacter(character: InsertCharacter): Promise<Character>;
   updateCharacterHp(id: number, currentHp: number): Promise<Character>;
+  updateCharacterInitiative(id: number, initiative: number): Promise<Character>;
   deleteCharacter(id: number): Promise<void>;
   deleteAllCharacters(): Promise<void>;
 }
@@ -24,7 +25,12 @@ export class MemStorage implements IStorage {
 
   async createCharacter(insertChar: InsertCharacter): Promise<Character> {
     const id = this.currentId++;
-    const character: Character = { ...insertChar, id };
+    const character: Character = {
+      ...insertChar,
+      id,
+      isNpc: insertChar.isNpc ?? false,
+      maxHp: insertChar.maxHp ?? null
+    };
     this.characters.set(id, character);
     return character;
   }
@@ -35,6 +41,16 @@ export class MemStorage implements IStorage {
       throw new Error("Character not found");
     }
     const updated = { ...character, currentHp };
+    this.characters.set(id, updated);
+    return updated;
+  }
+
+  async updateCharacterInitiative(id: number, initiative: number): Promise<Character> {
+    const character = this.characters.get(id);
+    if (!character) {
+      throw new Error("Character not found");
+    }
+    const updated = { ...character, initiative };
     this.characters.set(id, updated);
     return updated;
   }

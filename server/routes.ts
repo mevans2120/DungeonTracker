@@ -37,6 +37,24 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.patch("/api/characters/:id/initiative", async (req, res) => {
+    const schema = z.object({ initiative: z.number().min(1).max(30) });
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ message: "Invalid initiative value" });
+    }
+
+    try {
+      const character = await storage.updateCharacterInitiative(
+        parseInt(req.params.id),
+        result.data.initiative
+      );
+      res.json(character);
+    } catch (error) {
+      res.status(404).json({ message: "Character not found" });
+    }
+  });
+
   app.delete("/api/characters/:id", async (req, res) => {
     try {
       await storage.deleteCharacter(parseInt(req.params.id));

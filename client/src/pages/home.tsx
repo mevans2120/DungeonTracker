@@ -13,8 +13,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Sword, Trash2, ChevronRight, Heart, Shield } from "lucide-react";
+import { Sword, Trash2, ChevronRight, Heart, Shield, Users, Skull } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +35,7 @@ export default function Home() {
       initiative: undefined,
       currentHp: undefined,
       maxHp: undefined,
+      isNpc: false,
     },
   });
 
@@ -53,6 +55,14 @@ export default function Home() {
   const updateHp = useMutation({
     mutationFn: ({ id, hp }: { id: number; hp: number }) =>
       apiRequest("PATCH", `/api/characters/${id}/hp`, { currentHp: hp }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
+    },
+  });
+
+  const updateInitiative = useMutation({
+    mutationFn: ({ id, initiative }: { id: number; initiative: number }) =>
+      apiRequest("PATCH", `/api/characters/${id}/initiative`, { initiative }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
     },
@@ -86,14 +96,12 @@ export default function Home() {
     addCharacter.mutate(data);
   };
 
-  const adjustHp = (character: Character, adjustment: number) => {
-    const newHp = Math.max(0, character.currentHp + adjustment);
-    updateHp.mutate({ id: character.id, hp: newHp });
-  };
-
   const nextTurn = () => {
     setCurrentTurn((prev) => (prev + 1) % characters.length);
   };
+
+  const pcs = characters.filter(char => !char.isNpc);
+  const npcs = characters.filter(char => char.isNpc);
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -102,7 +110,7 @@ export default function Home() {
           <Sword className="h-8 w-8" />
           Combat Tracker
         </h1>
-        
+
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive">Reset Combat</Button>
@@ -203,6 +211,21 @@ export default function Home() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="isNpc"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between">
+                      <FormLabel>NPC</FormLabel>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
                 <Button
                   type="submit"
                   className="w-full"
@@ -231,62 +254,123 @@ export default function Home() {
                 No characters in combat
               </div>
             ) : (
-              <div className="space-y-4">
-                {characters.map((char, index) => (
-                  <div
-                    key={char.id}
-                    className={`p-4 rounded-lg border ${
-                      index === currentTurn
-                        ? "bg-primary/5 border-primary"
-                        : "bg-card"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold">{char.name}</span>
-                        <span className="text-sm text-muted-foreground">
-                          Initiative: {char.initiative}
-                        </span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeCharacter.mutate(char.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+              <div className="space-y-6">
+                {pcs.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
+                      <Users className="h-4 w-4" />
+                      Player Characters
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <Heart className="h-4 w-4 text-red-500" />
-                        <span>
-                          {char.currentHp}
-                          {char.maxHp ? `/${char.maxHp}` : ""}
-                        </span>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => adjustHp(char, -1)}
-                        >
-                          -1
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => adjustHp(char, 1)}
-                        >
-                          +1
-                        </Button>
-                      </div>
+                    <div className="space-y-2">
+                      {pcs.map((char, index) => (
+                        <CharacterCard
+                          key={char.id}
+                          character={char}
+                          isCurrentTurn={index === currentTurn}
+                          onUpdateHp={updateHp.mutate}
+                          onUpdateInitiative={updateInitiative.mutate}
+                          onRemove={removeCharacter.mutate}
+                        />
+                      ))}
                     </div>
                   </div>
-                ))}
+                )}
+
+                {npcs.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
+                      <Skull className="h-4 w-4" />
+                      Non-Player Characters
+                    </div>
+                    <div className="space-y-2">
+                      {npcs.map((char, index) => (
+                        <CharacterCard
+                          key={char.id}
+                          character={char}
+                          isCurrentTurn={index === currentTurn}
+                          onUpdateHp={updateHp.mutate}
+                          onUpdateInitiative={updateInitiative.mutate}
+                          onRemove={removeCharacter.mutate}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
         </Card>
+      </div>
+    </div>
+  );
+}
+
+function CharacterCard({
+  character,
+  isCurrentTurn,
+  onUpdateHp,
+  onUpdateInitiative,
+  onRemove,
+}: {
+  character: Character;
+  isCurrentTurn: boolean;
+  onUpdateHp: (data: { id: number; hp: number }) => void;
+  onUpdateInitiative: (data: { id: number; initiative: number }) => void;
+  onRemove: (id: number) => void;
+}) {
+  return (
+    <div
+      className={`p-4 rounded-lg border ${
+        isCurrentTurn
+          ? "bg-primary/5 border-primary"
+          : "bg-card"
+      }`}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="font-bold">{character.name}</span>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              value={character.initiative}
+              className="w-20"
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                if (!isNaN(value)) {
+                  onUpdateInitiative({ id: character.id, initiative: value });
+                }
+              }}
+            />
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onRemove(character.id)}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Heart className="h-4 w-4 text-red-500" />
+          <Input
+            type="number"
+            value={character.currentHp}
+            className="w-20"
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              if (!isNaN(value) && value >= 0) {
+                onUpdateHp({ id: character.id, hp: value });
+              }
+            }}
+          />
+          {character.maxHp && (
+            <span className="text-sm text-muted-foreground">
+              /{character.maxHp}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
