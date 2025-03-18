@@ -419,12 +419,6 @@ function CharacterCard({
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [maxHp, setMaxHp] = useState(character.maxHp);
 
-  const form = useForm({
-    defaultValues: {
-      maxHp: character.maxHp || undefined,
-    },
-  });
-
   const handleMaxHpChange = (value: number | undefined) => {
     // Update local state
     setMaxHp(value || null);
@@ -496,7 +490,9 @@ function CharacterCard({
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <FormLabel>Maximum HP</FormLabel>
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Maximum HP
+                </label>
                 <Input
                   type="number"
                   placeholder="Maximum hit points"
