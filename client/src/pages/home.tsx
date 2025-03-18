@@ -294,17 +294,11 @@ export default function Home() {
             <CardTitle>Initiative Order</CardTitle>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   {sortByInitiative ? (
-                    <>
-                      <Group className="h-4 w-4" />
-                      <span className="text-sm">Grouped by Type</span>
-                    </>
+                    <Group className="h-4 w-4" />
                   ) : (
-                    <>
-                      <SortAsc className="h-4 w-4" />
-                      <span className="text-sm">Initiative Order</span>
-                    </>
+                    <SortAsc className="h-4 w-4" />
                   )}
                   <ChevronDown className="h-4 w-4 ml-1" />
                 </Button>
