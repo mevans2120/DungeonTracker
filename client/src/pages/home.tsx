@@ -33,7 +33,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Sword, Trash2, ChevronRight, Heart, Shield, Users, Skull, Plus } from "lucide-react";
+import { Sword, Trash2, ChevronRight, Heart, Shield, Users, Skull, Plus, SortAsc, Group } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -42,13 +42,25 @@ export default function Home() {
   const { toast } = useToast();
   const [currentTurn, setCurrentTurn] = useState(0);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [sortByInitiative, setSortByInitiative] = useState(true);
 
   const { data: characters = [], isLoading } = useQuery<Character[]>({
     queryKey: ["/api/characters"],
   });
 
-  // Sort all characters by initiative
-  const sortedCharacters = [...characters].sort((a, b) => b.initiative - a.initiative);
+  // Sort characters based on the current sorting preference
+  const sortedCharacters = [...characters].sort((a, b) => {
+    if (sortByInitiative) {
+      return b.initiative - a.initiative;
+    }
+    // When not sorting by initiative, group by PC/NPC first
+    if (a.isNpc !== b.isNpc) {
+      return a.isNpc ? 1 : -1;
+    }
+    // Within each group, sort by initiative
+    return b.initiative - a.initiative;
+  });
+
   const currentCharacter = sortedCharacters[currentTurn];
 
   const form = useForm({
@@ -124,9 +136,6 @@ export default function Home() {
     setCurrentTurn((prev) => (prev + 1) % sortedCharacters.length);
   };
 
-  // Filter characters into PCs and NPCs while preserving their initiative order
-  const pcs = sortedCharacters.filter(char => !char.isNpc);
-  const npcs = sortedCharacters.filter(char => char.isNpc);
 
   return (
     <div className="container mx-auto px-2 py-4 max-w-2xl">
@@ -275,7 +284,27 @@ export default function Home() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Initiative Order</CardTitle>
+          <div className="flex items-center gap-4">
+            <CardTitle>Initiative Order</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-2"
+              onClick={() => setSortByInitiative(!sortByInitiative)}
+            >
+              {!sortByInitiative ? (
+                <>
+                  <SortAsc className="h-4 w-4" />
+                  <span className="text-sm">Sort by Initiative</span>
+                </>
+              ) : (
+                <>
+                  <Group className="h-4 w-4" />
+                  <span className="text-sm">Group by Type</span>
+                </>
+              )}
+            </Button>
+          </div>
           <Button onClick={nextTurn} disabled={characters.length === 0}>
             Next Turn
             <ChevronRight className="ml-2 h-4 w-4" />
@@ -289,48 +318,17 @@ export default function Home() {
               No characters in combat
             </div>
           ) : (
-            <div className="space-y-6">
-              {pcs.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    Player Characters
-                  </div>
-                  <div className="space-y-2">
-                    {pcs.map((char) => (
-                      <CharacterCard
-                        key={char.id}
-                        character={char}
-                        isCurrentTurn={currentCharacter?.id === char.id}
-                        onUpdateHp={updateHp.mutate}
-                        onUpdateInitiative={updateInitiative.mutate}
-                        onRemove={removeCharacter.mutate}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {npcs.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
-                    <Skull className="h-4 w-4" />
-                    Non-Player Characters
-                  </div>
-                  <div className="space-y-2">
-                    {npcs.map((char) => (
-                      <CharacterCard
-                        key={char.id}
-                        character={char}
-                        isCurrentTurn={currentCharacter?.id === char.id}
-                        onUpdateHp={updateHp.mutate}
-                        onUpdateInitiative={updateInitiative.mutate}
-                        onRemove={removeCharacter.mutate}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="space-y-2">
+              {sortedCharacters.map((char) => (
+                <CharacterCard
+                  key={char.id}
+                  character={char}
+                  isCurrentTurn={currentCharacter?.id === char.id}
+                  onUpdateHp={updateHp.mutate}
+                  onUpdateInitiative={updateInitiative.mutate}
+                  onRemove={removeCharacter.mutate}
+                />
+              ))}
             </div>
           )}
         </CardContent>
