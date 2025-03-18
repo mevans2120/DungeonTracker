@@ -294,13 +294,13 @@ export default function Home() {
             <CardTitle>Initiative Order</CardTitle>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex items-center gap-1">
                   {sortByInitiative ? (
                     <Group className="h-4 w-4" />
                   ) : (
                     <SortAsc className="h-4 w-4" />
                   )}
-                  <ChevronDown className="h-4 w-4 ml-1" />
+                  <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
