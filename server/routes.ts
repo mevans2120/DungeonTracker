@@ -70,7 +70,7 @@ export async function registerRoutes(app: Express) {
     res.status(204).send();
   });
 
-  // New tutorial content routes
+  // Tutorial content routes
   app.get("/api/tutorial", async (_req, res) => {
     const content = await storage.getTutorialContent();
     res.json(content);
@@ -85,7 +85,6 @@ export async function registerRoutes(app: Express) {
     res.status(201).json(content);
   });
 
-  // Update the patch endpoint
   app.patch("/api/tutorial/:id", async (req, res) => {
     const schema = z.object({
       title: z.string().optional(),
@@ -109,25 +108,18 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Add initialization endpoint
-  app.post("/api/tutorial/init", async (req, res) => {
+  // Initialize tutorial content
+  app.post("/api/tutorial/init", async (_req, res) => {
     try {
-      // First clear any existing tutorial content
       await storage.clearTutorialContent();
 
-      // Initialize with default content
-      const defaultSteps = [
-        {
-          stepId: 0,
-          title: "Welcome to DungeonTracker!",
-          description: "This quick tutorial will show you how to manage combat in your D&D game.",
-          content: JSON.stringify({
-            type: "basic",
-            text: "Get started with combat tracking"
-          })
-        },
-        // Add other default steps...
-      ];
+      // Convert the default steps to the database format
+      const defaultSteps = DEFAULT_TUTORIAL_STEPS.map(step => ({
+        stepId: step.stepId,
+        title: step.title,
+        description: step.description,
+        content: JSON.stringify(step.content)
+      }));
 
       for (const step of defaultSteps) {
         await storage.createTutorialContent(step);
@@ -142,3 +134,34 @@ export async function registerRoutes(app: Express) {
 
   return createServer(app);
 }
+
+// Default tutorial steps
+const DEFAULT_TUTORIAL_STEPS = [
+  {
+    stepId: 0,
+    title: "Welcome to DungeonTracker!",
+    description: "This quick tutorial will show you how to manage combat in your D&D game.",
+    content: {
+      type: "basic",
+      text: "DungeonTracker helps you:\n- Track initiative order\n- Manage character HP\n- Keep combat flowing smoothly\n\nNo account or setup required - just add your characters and start playing!"
+    }
+  },
+  {
+    stepId: 1,
+    title: "Adding Characters",
+    description: "Start by adding your players and monsters to the combat.",
+    content: {
+      type: "basic",
+      text: "Click the 'Add to Combat' button to open the character form.\n\nFor each character, enter:\n- Name: Character's name\n- Initiative: Their initiative roll (1-30)\n- Current HP: Starting hit points\n- Max HP: Optional maximum HP\n- NPC: Toggle for non-player characters"
+    }
+  },
+  {
+    stepId: 2,
+    title: "Initiative Order",
+    description: "Characters are automatically sorted by initiative.",
+    content: {
+      type: "basic",
+      text: "The initiative list shows all characters in order:\n- Highest initiative goes first\n- PCs and NPCs are grouped separately\n- The current turn is highlighted\n- Use 'Next Turn' to advance combat"
+    }
+  }
+];

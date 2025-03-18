@@ -27,89 +27,30 @@ import { useToast } from "@/hooks/use-toast";
 const DEFAULT_TUTORIAL_STEPS = [
   {
     stepId: 0,
-    id:0, // Added id field for consistency.  This assumes the backend now provides an id.
     title: "Welcome to DungeonTracker!",
     description: "This quick tutorial will show you how to manage combat in your D&D game.",
-    content: (
-      <div className="space-y-4">
-        <p>DungeonTracker helps you:</p>
-        <ul className="list-disc pl-4 space-y-2">
-          <li>Track initiative order</li>
-          <li>Manage character HP</li>
-          <li>Keep combat flowing smoothly</li>
-        </ul>
-        <p>No account or setup required - just add your characters and start playing!</p>
-      </div>
-    )
+    content: {
+      type: "basic",
+      text: "DungeonTracker helps you:\n- Track initiative order\n- Manage character HP\n- Keep combat flowing smoothly\n\nNo account or setup required - just add your characters and start playing!"
+    }
   },
   {
     stepId: 1,
-    id:1, // Added id field for consistency.  This assumes the backend now provides an id.
     title: "Adding Characters",
     description: "Start by adding your players and monsters to the combat.",
-    content: (
-      <div className="space-y-4">
-        <p>Click the "Add to Combat" button to open the character form.</p>
-        <p>For each character, enter:</p>
-        <ul className="list-disc pl-4 space-y-2">
-          <li><strong>Name:</strong> Character's name</li>
-          <li><strong>Initiative:</strong> Their initiative roll (1-30)</li>
-          <li><strong>Current HP:</strong> Starting hit points</li>
-          <li><strong>Max HP:</strong> Optional maximum HP</li>
-          <li><strong>NPC:</strong> Toggle for non-player characters</li>
-        </ul>
-      </div>
-    )
+    content: {
+      type: "basic",
+      text: "Click the 'Add to Combat' button to open the character form.\n\nFor each character, enter:\n- Name: Character's name\n- Initiative: Their initiative roll (1-30)\n- Current HP: Starting hit points\n- Max HP: Optional maximum HP\n- NPC: Toggle for non-player characters"
+    }
   },
   {
     stepId: 2,
-    id:2, // Added id field for consistency.  This assumes the backend now provides an id.
     title: "Initiative Order",
     description: "Characters are automatically sorted by initiative.",
-    content: (
-      <div className="space-y-4">
-        <p>The initiative list shows all characters in order:</p>
-        <ul className="list-disc pl-4 space-y-2">
-          <li>Highest initiative goes first</li>
-          <li>PCs and NPCs are grouped separately</li>
-          <li>The current turn is highlighted</li>
-          <li>Use "Next Turn" to advance combat</li>
-        </ul>
-      </div>
-    )
-  },
-  {
-    stepId: 3,
-    id:3, // Added id field for consistency.  This assumes the backend now provides an id.
-    title: "Managing HP",
-    description: "Keep track of damage and healing.",
-    content: (
-      <div className="space-y-4">
-        <p>For each character, you can:</p>
-        <ul className="list-disc pl-4 space-y-2">
-          <li>Type in the HP value directly</li>
-          <li>See current HP and max HP (if set)</li>
-          <li>Remove characters when they leave combat</li>
-        </ul>
-      </div>
-    )
-  },
-  {
-    stepId: 4,
-    id:4, // Added id field for consistency.  This assumes the backend now provides an id.
-    title: "Ready to Play!",
-    description: "You're all set to start tracking combat.",
-    content: (
-      <div className="space-y-4">
-        <p>Quick tips:</p>
-        <ul className="list-disc pl-4 space-y-2">
-          <li>Use "Reset Combat" to clear all characters</li>
-          <li>Update initiative values anytime</li>
-          <li>Remove individual characters as needed</li>
-          <li>Click the help icon to reopen this tutorial</li>
-        </ul>
-      </div>
-    )
+    content: {
+      type: "basic",
+      text: "The initiative list shows all characters in order:\n- Highest initiative goes first\n- PCs and NPCs are grouped separately\n- The current turn is highlighted\n- Use 'Next Turn' to advance combat"
+    }
   }
 ];
 
@@ -119,13 +60,27 @@ export function Tutorial() {
     return !localStorage.getItem("hasSeenTutorial");
   });
   const [currentStep, setCurrentStep] = useState(0);
-  const [editingStep, setEditingStep] = useState<typeof DEFAULT_TUTORIAL_STEPS[0] | null>(null);
+  const [editingStep, setEditingStep] = useState<null | {
+    id: number;
+    stepId: number;
+    title: string;
+    description: string;
+    content: any;
+  }>(null);
 
   const { data: tutorialSteps = DEFAULT_TUTORIAL_STEPS, isLoading } = useQuery({
     queryKey: ["/api/tutorial"],
     queryFn: async () => {
       const response = await fetch("/api/tutorial");
       if (!response.ok) {
+        // Initialize if no content exists
+        const initResponse = await fetch("/api/tutorial/init", { method: "POST" });
+        if (initResponse.ok) {
+          const retryResponse = await fetch("/api/tutorial");
+          if (retryResponse.ok) {
+            return await retryResponse.json();
+          }
+        }
         return DEFAULT_TUTORIAL_STEPS;
       }
       const data = await response.json();
@@ -145,6 +100,13 @@ export function Tutorial() {
       });
       setEditingStep(null);
     },
+    onError: (error) => {
+      toast({
+        title: "Error updating tutorial",
+        description: "Failed to save changes. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 
   const handleFinish = () => {
@@ -167,7 +129,7 @@ export function Tutorial() {
     }
   };
 
-  const handleEdit = (step: typeof DEFAULT_TUTORIAL_STEPS[0]) => {
+  const handleEdit = (step: typeof tutorialSteps[0]) => {
     setEditingStep(step);
   };
 
@@ -175,17 +137,9 @@ export function Tutorial() {
     if (!editingStep) return;
 
     updateTutorial.mutate({
-      id: editingStep.id, // Use the database ID
+      id: editingStep.id,
       title: editingStep.title,
       description: editingStep.description,
-    }, {
-      onError: (error) => {
-        toast({
-          title: "Error updating tutorial",
-          description: "Failed to save changes. Please try again.",
-          variant: "destructive",
-        });
-      }
     });
   };
 
@@ -223,7 +177,9 @@ export function Tutorial() {
               </Button>
             </CardHeader>
             <CardContent>
-              {tutorialSteps[currentStep].content}
+              {typeof tutorialSteps[currentStep].content === 'string' 
+                ? tutorialSteps[currentStep].content
+                : tutorialSteps[currentStep].content.text}
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button
