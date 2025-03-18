@@ -129,10 +129,10 @@ export default function Home() {
   const npcs = sortedCharacters.filter(char => char.isNpc);
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold text-primary flex items-center gap-2">
-          <Sword className="h-8 w-8" />
+    <div className="container mx-auto px-2 py-4 max-w-2xl">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-2">
+        <h1 className="text-3xl sm:text-4xl font-bold text-primary flex items-center gap-2">
+          <Sword className="h-6 w-6 sm:h-8 sm:w-8" />
           Combat Tracker
         </h1>
 
