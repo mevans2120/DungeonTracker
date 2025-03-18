@@ -1,10 +1,11 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
-import { insertCharacterSchema } from "@shared/schema";
+import { insertCharacterSchema, insertTutorialContentSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express) {
+  // Existing character routes
   app.get("/api/characters", async (_req, res) => {
     const characters = await storage.getCharacters();
     res.json(characters);
@@ -67,6 +68,38 @@ export async function registerRoutes(app: Express) {
   app.delete("/api/characters", async (_req, res) => {
     await storage.deleteAllCharacters();
     res.status(204).send();
+  });
+
+  // New tutorial content routes
+  app.get("/api/tutorial", async (_req, res) => {
+    const content = await storage.getTutorialContent();
+    res.json(content);
+  });
+
+  app.post("/api/tutorial", async (req, res) => {
+    const result = insertTutorialContentSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ message: "Invalid tutorial content" });
+    }
+    const content = await storage.createTutorialContent(result.data);
+    res.status(201).json(content);
+  });
+
+  app.patch("/api/tutorial/:id", async (req, res) => {
+    const result = insertTutorialContentSchema.partial().safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ message: "Invalid tutorial content" });
+    }
+
+    try {
+      const content = await storage.updateTutorialContent(
+        parseInt(req.params.id),
+        result.data
+      );
+      res.json(content);
+    } catch (error) {
+      res.status(404).json({ message: "Tutorial content not found" });
+    }
   });
 
   return createServer(app);

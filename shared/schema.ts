@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -9,6 +9,17 @@ export const characters = pgTable("characters", {
   currentHp: integer("current_hp").notNull(),
   maxHp: integer("max_hp"),
   isNpc: boolean("is_npc").notNull().default(false),
+});
+
+// New table for tutorial content
+export const tutorialContent = pgTable("tutorial_content", {
+  id: serial("id").primaryKey(),
+  stepId: integer("step_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  content: json("content").notNull(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
 });
 
 export const insertCharacterSchema = createInsertSchema(characters)
@@ -26,5 +37,19 @@ export const insertCharacterSchema = createInsertSchema(characters)
     isNpc: z.boolean().default(false),
   });
 
+export const insertTutorialContentSchema = createInsertSchema(tutorialContent)
+  .pick({
+    stepId: true,
+    title: true,
+    description: true,
+    content: true,
+  })
+  .extend({
+    stepId: z.number().min(0),
+    content: z.any(), // We'll store the JSX content as JSON
+  });
+
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
 export type Character = typeof characters.$inferSelect;
+export type TutorialContent = typeof tutorialContent.$inferSelect;
+export type InsertTutorialContent = z.infer<typeof insertTutorialContentSchema>;

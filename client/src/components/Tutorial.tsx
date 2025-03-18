@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -17,9 +18,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { queryClient } from "@/lib/queryClient";
 
-const TUTORIAL_STEPS = [
+// Default tutorial steps that will be used if no content is stored
+const DEFAULT_TUTORIAL_STEPS = [
   {
+    stepId: 0,
     title: "Welcome to DungeonTracker!",
     description: "This quick tutorial will show you how to manage combat in your D&D game.",
     content: (
@@ -35,6 +39,7 @@ const TUTORIAL_STEPS = [
     )
   },
   {
+    stepId: 1,
     title: "Adding Characters",
     description: "Start by adding your players and monsters to the combat.",
     content: (
@@ -52,6 +57,7 @@ const TUTORIAL_STEPS = [
     )
   },
   {
+    stepId: 2,
     title: "Initiative Order",
     description: "Characters are automatically sorted by initiative.",
     content: (
@@ -67,6 +73,7 @@ const TUTORIAL_STEPS = [
     )
   },
   {
+    stepId: 3,
     title: "Managing HP",
     description: "Keep track of damage and healing.",
     content: (
@@ -81,6 +88,7 @@ const TUTORIAL_STEPS = [
     )
   },
   {
+    stepId: 4,
     title: "Ready to Play!",
     description: "You're all set to start tracking combat.",
     content: (
@@ -102,6 +110,18 @@ export function Tutorial() {
   const [currentStep, setCurrentStep] = useState(0);
   const [hasSeenTutorial, setHasSeenTutorial] = useState(false);
 
+  const { data: tutorialSteps = DEFAULT_TUTORIAL_STEPS, isLoading } = useQuery({
+    queryKey: ["/api/tutorial"],
+    queryFn: async () => {
+      const response = await fetch("/api/tutorial");
+      if (!response.ok) {
+        return DEFAULT_TUTORIAL_STEPS;
+      }
+      const data = await response.json();
+      return data.length > 0 ? data : DEFAULT_TUTORIAL_STEPS;
+    }
+  });
+
   useEffect(() => {
     const seen = localStorage.getItem("hasSeenTutorial");
     if (!seen) {
@@ -119,7 +139,7 @@ export function Tutorial() {
   };
 
   const handleNext = () => {
-    if (currentStep < TUTORIAL_STEPS.length - 1) {
+    if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
       handleFinish();
@@ -131,6 +151,10 @@ export function Tutorial() {
       setCurrentStep(currentStep - 1);
     }
   };
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <>
@@ -147,13 +171,13 @@ export function Tutorial() {
         <DialogContent className="max-w-lg">
           <Card>
             <CardHeader>
-              <CardTitle>{TUTORIAL_STEPS[currentStep].title}</CardTitle>
+              <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
               <CardDescription>
-                {TUTORIAL_STEPS[currentStep].description}
+                {tutorialSteps[currentStep].description}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {TUTORIAL_STEPS[currentStep].content}
+              {tutorialSteps[currentStep].content}
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button
@@ -164,7 +188,7 @@ export function Tutorial() {
                 Previous
               </Button>
               <Button onClick={handleNext}>
-                {currentStep === TUTORIAL_STEPS.length - 1 ? "Finish" : "Next"}
+                {currentStep === tutorialSteps.length - 1 ? "Finish" : "Next"}
               </Button>
             </CardFooter>
           </Card>
