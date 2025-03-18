@@ -14,16 +14,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle, 
-  AlertDialogTrigger 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import {
   Dialog,
@@ -46,6 +46,10 @@ export default function Home() {
   const { data: characters = [], isLoading } = useQuery<Character[]>({
     queryKey: ["/api/characters"],
   });
+
+  // Sort all characters by initiative
+  const sortedCharacters = [...characters].sort((a, b) => b.initiative - a.initiative);
+  const currentCharacter = sortedCharacters[currentTurn];
 
   const form = useForm({
     resolver: zodResolver(insertCharacterSchema),
@@ -117,11 +121,12 @@ export default function Home() {
   };
 
   const nextTurn = () => {
-    setCurrentTurn((prev) => (prev + 1) % characters.length);
+    setCurrentTurn((prev) => (prev + 1) % sortedCharacters.length);
   };
 
-  const pcs = characters.filter(char => !char.isNpc);
-  const npcs = characters.filter(char => char.isNpc);
+  // Filter characters into PCs and NPCs while preserving their initiative order
+  const pcs = sortedCharacters.filter(char => !char.isNpc);
+  const npcs = sortedCharacters.filter(char => char.isNpc);
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -292,11 +297,11 @@ export default function Home() {
                     Player Characters
                   </div>
                   <div className="space-y-2">
-                    {pcs.map((char, index) => (
+                    {pcs.map((char) => (
                       <CharacterCard
                         key={char.id}
                         character={char}
-                        isCurrentTurn={index === currentTurn}
+                        isCurrentTurn={currentCharacter?.id === char.id}
                         onUpdateHp={updateHp.mutate}
                         onUpdateInitiative={updateInitiative.mutate}
                         onRemove={removeCharacter.mutate}
@@ -313,11 +318,11 @@ export default function Home() {
                     Non-Player Characters
                   </div>
                   <div className="space-y-2">
-                    {npcs.map((char, index) => (
+                    {npcs.map((char) => (
                       <CharacterCard
                         key={char.id}
                         character={char}
-                        isCurrentTurn={index === currentTurn}
+                        isCurrentTurn={currentCharacter?.id === char.id}
                         onUpdateHp={updateHp.mutate}
                         onUpdateInitiative={updateInitiative.mutate}
                         onRemove={removeCharacter.mutate}
