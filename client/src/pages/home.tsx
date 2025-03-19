@@ -420,9 +420,6 @@ function CharacterCard({
   onUpdateInitiative: (data: { id: number; initiative: number }) => void;
   onRemove: (id: number) => void;
 }) {
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [maxHp, setMaxHp] = useState(character.maxHp);
-
   return (
     <div
       className={`p-4 rounded-lg border group transition-all duration-200 ease-in-out hover:shadow-md hover:-translate-y-[2px] ${
@@ -458,9 +455,9 @@ function CharacterCard({
                 }
               }}
             />
-            {maxHp && (
+            {character.maxHp && (
               <span className="text-sm text-muted-foreground">
-                /{maxHp}
+                /{character.maxHp}
               </span>
             )}
           </div>
