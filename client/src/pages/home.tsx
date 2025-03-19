@@ -490,7 +490,7 @@ function CharacterCard({
         <div className="flex-1 grid grid-cols-[1fr,auto,auto] items-center gap-6">
           <span className="text-lg font-bold">{character.name}</span>
           <div className="flex items-center gap-2">
-            <img src={d20Icon} alt="Initiative" className="w-5 h-5 opacity-60" />
+            <img src={d20Icon} alt="Initiative" className="w-5 h-5" />
             <Input
               type="number"
               value={character.initiative}
