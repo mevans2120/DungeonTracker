@@ -39,7 +39,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Sword, Trash2, ChevronRight, Heart, Shield, Users, Skull, Plus, SortAsc, Group, ChevronDown, Settings2 } from "lucide-react";
+import {
+  Sword,
+  Trash2,
+  ChevronRight,
+  Heart,
+  Shield,
+  Users,
+  Skull,
+  Plus,
+  SortAsc,
+  Group,
+  ChevronDown,
+  Settings2,
+} from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -81,8 +94,7 @@ export default function Home() {
   });
 
   const addCharacter = useMutation({
-    mutationFn: (data: any) =>
-      apiRequest("POST", "/api/characters", data),
+    mutationFn: (data: any) => apiRequest("POST", "/api/characters", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
       form.reset();
@@ -111,8 +123,7 @@ export default function Home() {
   });
 
   const removeCharacter = useMutation({
-    mutationFn: (id: number) =>
-      apiRequest("DELETE", `/api/characters/${id}`),
+    mutationFn: (id: number) => apiRequest("DELETE", `/api/characters/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
       toast({
@@ -159,161 +170,21 @@ export default function Home() {
   }, [sortedCharacters.length]);
 
   return (
-    <div className="container mx-auto px-2 py-4 max-w-2xl">
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-2">
-        <h1 className="text-3xl sm:text-4xl font-bold text-primary flex items-center gap-2">
-          <Sword className="h-6 w-6 sm:h-8 sm:w-8" />
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold mb-2 flex items-center justify-center gap-3">
+          <Sword className="h-8 w-8" />
           Combat Tracker
         </h1>
-
-        <div className="flex gap-2">
-          <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add to Combat
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Character</DialogTitle>
-                <DialogDescription>
-                  Add a new character to the combat tracker
-                </DialogDescription>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Character name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="initiative"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Initiative</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="Initiative roll"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="currentHp"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Current HP</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="Current hit points"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="maxHp"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Max HP (optional)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="Maximum hit points"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(
-                                e.target.value
-                                  ? parseInt(e.target.value)
-                                  : undefined
-                              )
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="isNpc"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between">
-                        <FormLabel>NPC</FormLabel>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={addCharacter.isPending}
-                  >
-                    Add to Combat
-                  </Button>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">Reset Combat</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Reset Combat?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will remove all characters from combat. This action
-                  cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => resetCombat.mutate()}>
-                  Reset
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+        <p className="text-muted-foreground">
+          A place to keep order and track damage
+        </p>
       </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-4">
-            <CardTitle>Players in Combat</CardTitle>
+            <CardTitle>Players & NPCs</CardTitle>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -343,6 +214,154 @@ export default function Home() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          <div className="flex items-center gap-4">
+            <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="bg-black text-white">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add to Combat
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Character</DialogTitle>
+                  <DialogDescription>
+                    Add a new character to the combat tracker
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Character name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="initiative"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Initiative</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="Initiative roll"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="currentHp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Current HP</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="Current hit points"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="maxHp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Max HP (optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="Maximum hit points"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value
+                                    ? parseInt(e.target.value)
+                                    : undefined
+                                )
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="isNpc"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between">
+                          <FormLabel>NPC</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={addCharacter.isPending}
+                    >
+                      Add to Combat
+                    </Button>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Reset
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset Combat?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will remove all characters from combat. This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => resetCombat.mutate()}>
+                    Reset
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -364,7 +383,9 @@ export default function Home() {
                       onUpdateHp={updateHp.mutate}
                       onUpdateInitiative={updateInitiative.mutate}
                       onRemove={removeCharacter.mutate}
-                      onSelect={() => setCurrentTurn(sortedCharacters.indexOf(char))}
+                      onSelect={() =>
+                        setCurrentTurn(sortedCharacters.indexOf(char))
+                      }
                     />
                   ))}
                 </div>
@@ -391,7 +412,9 @@ export default function Home() {
                               onUpdateHp={updateHp.mutate}
                               onUpdateInitiative={updateInitiative.mutate}
                               onRemove={removeCharacter.mutate}
-                              onSelect={() => setCurrentTurn(sortedCharacters.indexOf(char))}
+                              onSelect={() =>
+                                setCurrentTurn(sortedCharacters.indexOf(char))
+                              }
                             />
                           ))}
                       </div>
@@ -418,7 +441,9 @@ export default function Home() {
                               onUpdateHp={updateHp.mutate}
                               onUpdateInitiative={updateInitiative.mutate}
                               onRemove={removeCharacter.mutate}
-                              onSelect={() => setCurrentTurn(sortedCharacters.indexOf(char))}
+                              onSelect={() =>
+                                setCurrentTurn(sortedCharacters.indexOf(char))
+                              }
                             />
                           ))}
                       </div>
@@ -462,7 +487,9 @@ function CharacterCard({
           className={`w-3 h-3 rounded-full transition-colors duration-200 ${
             isCurrentTurn ? "bg-[#4ADE80]" : "bg-muted"
           }`}
-          aria-label={isCurrentTurn ? `Current turn: ${character.name}` : undefined}
+          aria-label={
+            isCurrentTurn ? `Current turn: ${character.name}` : undefined
+          }
         />
         <div className="flex-1 flex items-center gap-2">
           <span className="font-bold">{character.name}</span>
