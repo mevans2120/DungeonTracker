@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -138,6 +138,25 @@ export default function Home() {
     addCharacter.mutate(data);
   };
 
+  // Add keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (sortedCharacters.length === 0) return;
+
+      if (e.key === "ArrowDown" || e.key === "Tab") {
+        e.preventDefault();
+        setCurrentTurn((prev) => (prev + 1) % sortedCharacters.length);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setCurrentTurn((prev) =>
+          prev === 0 ? sortedCharacters.length - 1 : prev - 1
+        );
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [sortedCharacters.length]);
 
   return (
     <div className="container mx-auto px-2 py-4 max-w-2xl">
@@ -444,6 +463,15 @@ function CharacterCard({
             isCurrentTurn ? "bg-[#4ADE80]" : "bg-muted hover:bg-muted-foreground/50"
           }`}
           onClick={onSelect}
+          tabIndex={0}
+          role="button"
+          aria-label={`Select ${character.name}'s turn`}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onSelect();
+            }
+          }}
         />
         <div className="flex-1 flex items-center gap-2">
           <span className="font-bold">{character.name}</span>
