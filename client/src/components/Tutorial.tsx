@@ -104,8 +104,8 @@ const DEFAULT_TUTORIAL_STEPS = [
       <div className="space-y-4">
         <p>Quick tips:</p>
         <ul className="list-disc pl-4 space-y-2">
-          <li>Use "Reset Combat" to clear all characters</li>
-          <li>Update initiative values anytime</li>
+          <li>Use Up and Down arrows to go through each turn</li>
+          <li>Sort by order or by NPC / PC</li>
           <li>Remove individual characters as needed</li>
           <li>Click the help icon to reopen this tutorial</li>
         </ul>
