@@ -459,19 +459,10 @@ function CharacterCard({
     >
       <div className="flex items-center gap-4">
         <div
-          className={`w-3 h-3 rounded-full cursor-pointer transition-colors duration-200 ${
-            isCurrentTurn ? "bg-[#4ADE80]" : "bg-muted hover:bg-muted-foreground/50"
+          className={`w-3 h-3 rounded-full transition-colors duration-200 ${
+            isCurrentTurn ? "bg-[#4ADE80]" : "bg-muted"
           }`}
-          onClick={onSelect}
-          tabIndex={0}
-          role="button"
-          aria-label={`Select ${character.name}'s turn`}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onSelect();
-            }
-          }}
+          aria-label={isCurrentTurn ? `Current turn: ${character.name}` : undefined}
         />
         <div className="flex-1 flex items-center gap-2">
           <span className="font-bold">{character.name}</span>
