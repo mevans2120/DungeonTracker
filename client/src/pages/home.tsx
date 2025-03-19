@@ -138,9 +138,6 @@ export default function Home() {
     addCharacter.mutate(data);
   };
 
-  const nextTurn = () => {
-    setCurrentTurn((prev) => (prev + 1) % sortedCharacters.length);
-  };
 
   return (
     <div className="container mx-auto px-2 py-4 max-w-2xl">
@@ -327,10 +324,6 @@ export default function Home() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <Button onClick={nextTurn} disabled={characters.length === 0}>
-            Next Turn
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -352,6 +345,7 @@ export default function Home() {
                       onUpdateHp={updateHp.mutate}
                       onUpdateInitiative={updateInitiative.mutate}
                       onRemove={removeCharacter.mutate}
+                      onSelect={() => setCurrentTurn(sortedCharacters.indexOf(char))}
                     />
                   ))}
                 </div>
@@ -378,6 +372,7 @@ export default function Home() {
                               onUpdateHp={updateHp.mutate}
                               onUpdateInitiative={updateInitiative.mutate}
                               onRemove={removeCharacter.mutate}
+                              onSelect={() => setCurrentTurn(sortedCharacters.indexOf(char))}
                             />
                           ))}
                       </div>
@@ -404,6 +399,7 @@ export default function Home() {
                               onUpdateHp={updateHp.mutate}
                               onUpdateInitiative={updateInitiative.mutate}
                               onRemove={removeCharacter.mutate}
+                              onSelect={() => setCurrentTurn(sortedCharacters.indexOf(char))}
                             />
                           ))}
                       </div>
@@ -425,12 +421,14 @@ function CharacterCard({
   onUpdateHp,
   onUpdateInitiative,
   onRemove,
+  onSelect,
 }: {
   character: Character;
   isCurrentTurn: boolean;
   onUpdateHp: (data: { id: number; hp: number }) => void;
   onUpdateInitiative: (data: { id: number; initiative: number }) => void;
   onRemove: (id: number) => void;
+  onSelect: () => void;
 }) {
   return (
     <div
@@ -441,6 +439,12 @@ function CharacterCard({
       }`}
     >
       <div className="flex items-center gap-4">
+        <div 
+          className={`w-3 h-3 rounded-full cursor-pointer transition-colors duration-200 ${
+            isCurrentTurn ? "bg-primary" : "bg-muted hover:bg-muted-foreground/50"
+          }`}
+          onClick={onSelect}
+        />
         <div className="flex-1 flex items-center gap-2">
           <span className="font-bold">{character.name}</span>
           <Input
