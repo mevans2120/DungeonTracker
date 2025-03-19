@@ -56,6 +56,7 @@ import {
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import d20Icon from "../assets/20-sided-die.png";
 
 export default function Home() {
   const { toast } = useToast();
@@ -462,14 +463,12 @@ function CharacterCard({
   onUpdateHp,
   onUpdateInitiative,
   onRemove,
-  onSelect,
 }: {
   character: Character;
   isCurrentTurn: boolean;
   onUpdateHp: (data: { id: number; hp: number }) => void;
   onUpdateInitiative: (data: { id: number; initiative: number }) => void;
   onRemove: (id: number) => void;
-  onSelect: () => void;
 }) {
   return (
     <div
@@ -488,25 +487,28 @@ function CharacterCard({
             isCurrentTurn ? `Current turn: ${character.name}` : undefined
           }
         />
-        <div className="flex-1 flex items-center gap-2">
-          <span className="font-bold">{character.name}</span>
-          <Input
-            type="number"
-            value={character.initiative}
-            className="w-20"
-            onChange={(e) => {
-              const value = parseInt(e.target.value);
-              if (!isNaN(value)) {
-                onUpdateInitiative({ id: character.id, initiative: value });
-              }
-            }}
-          />
+        <div className="flex-1 grid grid-cols-[1fr,auto,auto] items-center gap-6">
+          <span className="text-lg font-bold">{character.name}</span>
+          <div className="flex items-center gap-2">
+            <img src={d20Icon} alt="Initiative" className="w-5 h-5 opacity-60" />
+            <Input
+              type="number"
+              value={character.initiative}
+              className="w-16"
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                if (!isNaN(value)) {
+                  onUpdateInitiative({ id: character.id, initiative: value });
+                }
+              }}
+            />
+          </div>
           <div className="flex items-center gap-2">
             <Heart className="h-4 w-4 text-red-500" />
             <Input
               type="number"
               value={character.currentHp}
-              className="w-20"
+              className="w-16"
               onChange={(e) => {
                 const value = parseInt(e.target.value);
                 if (!isNaN(value) && value >= 0) {
@@ -516,7 +518,7 @@ function CharacterCard({
             />
             {character.maxHp && (
               <span className="text-sm text-muted-foreground">
-                /{character.maxHp}
+                / {character.maxHp}
               </span>
             )}
           </div>
