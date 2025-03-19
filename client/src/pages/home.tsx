@@ -171,11 +171,11 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+      <div className="mb-8 flex items-center flex-wrap gap-x-3 gap-y-1">
+        <div className="flex items-center gap-3">
           <Sword className="h-8 w-8" />
-          Combat Tracker
-        </h1>
+          <h1 className="text-4xl font-bold">Combat Tracker</h1>
+        </div>
         <p className="text-muted-foreground">
           A place to keep order and track damage
         </p>
