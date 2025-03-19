@@ -40,7 +40,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Sword,
   Trash2,
   ChevronRight,
   Heart,
@@ -52,12 +51,12 @@ import {
   Group,
   ChevronDown,
   Settings2,
-  Dice6,
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { D20Icon } from "@/components/icons/D20Icon";
+import { CrossedSwordsIcon } from "@/components/icons/CrossedSwordsIcon";
 
 
 export default function Home() {
@@ -176,7 +175,7 @@ export default function Home() {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8 flex items-end flex-wrap gap-x-3 gap-y-1">
         <div className="flex items-center gap-3">
-          <Sword className="h-8 w-8" />
+          <CrossedSwordsIcon className="h-8 w-8" />
           <h1 className="text-4xl font-bold">Combat Tracker</h1>
         </div>
         <p className="text-muted-foreground">

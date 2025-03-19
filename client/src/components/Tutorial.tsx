@@ -27,15 +27,15 @@ const DEFAULT_TUTORIAL_STEPS = [
     description: "This is a tool for MEvans D&D sessions.",
     content: (
       <div className="space-y-4">
-        <p>DungeonTracker helps you:</p>
+        <p>Combat Tracker helps you:</p>
         <ul className="list-disc pl-4 space-y-2">
           <li>Track initiative order</li>
           <li>Manage character HP</li>
           <li>Keep combat flowing smoothly</li>
         </ul>
-        <p>No account or setup required - just add your characters and start playing!</p>
+        <p>But this is still a prototype, and we don't offer acounts yet!</p>
       </div>
-    )
+    ),
   },
   {
     stepId: 1,
@@ -46,14 +46,24 @@ const DEFAULT_TUTORIAL_STEPS = [
         <p>Click the "Add to Combat" button to open the character form.</p>
         <p>For each character, enter:</p>
         <ul className="list-disc pl-4 space-y-2">
-          <li><strong>Name:</strong> Character's name</li>
-          <li><strong>Initiative:</strong> Their initiative roll (1-30)</li>
-          <li><strong>Current HP:</strong> Starting hit points</li>
-          <li><strong>Max HP:</strong> Optional maximum HP</li>
-          <li><strong>NPC:</strong> Toggle for non-player characters</li>
+          <li>
+            <strong>Name:</strong> Character's name
+          </li>
+          <li>
+            <strong>Initiative:</strong> Their initiative roll (1-30)
+          </li>
+          <li>
+            <strong>Current HP:</strong> Starting hit points
+          </li>
+          <li>
+            <strong>Max HP:</strong> Optional maximum HP
+          </li>
+          <li>
+            <strong>NPC:</strong> Toggle for non-player characters
+          </li>
         </ul>
       </div>
-    )
+    ),
   },
   {
     stepId: 2,
@@ -69,7 +79,7 @@ const DEFAULT_TUTORIAL_STEPS = [
           <li>Use "Next Turn" to advance combat</li>
         </ul>
       </div>
-    )
+    ),
   },
   {
     stepId: 3,
@@ -84,7 +94,7 @@ const DEFAULT_TUTORIAL_STEPS = [
           <li>Remove characters when they leave combat</li>
         </ul>
       </div>
-    )
+    ),
   },
   {
     stepId: 4,
@@ -100,8 +110,8 @@ const DEFAULT_TUTORIAL_STEPS = [
           <li>Click the help icon to reopen this tutorial</li>
         </ul>
       </div>
-    )
-  }
+    ),
+  },
 ];
 
 export function Tutorial() {
@@ -120,7 +130,7 @@ export function Tutorial() {
       }
       const data = await response.json();
       return data.length > 0 ? data : DEFAULT_TUTORIAL_STEPS;
-    }
+    },
   });
 
   const handleFinish = () => {
@@ -167,9 +177,7 @@ export function Tutorial() {
                 {tutorialSteps[currentStep].description}
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              {tutorialSteps[currentStep].content}
-            </CardContent>
+            <CardContent>{tutorialSteps[currentStep].content}</CardContent>
             <CardFooter className="flex justify-between">
               <Button
                 variant="outline"
