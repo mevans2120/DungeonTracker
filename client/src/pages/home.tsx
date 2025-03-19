@@ -39,7 +39,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Sword, Trash2, Heart, Users, Skull, Plus, SortAsc, Group, ChevronDown } from "lucide-react";
+import { Sword, Trash2, ChevronRight, Heart, Shield, Users, Skull, Plus, SortAsc, Group, ChevronDown, Settings2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -142,17 +142,12 @@ export default function Home() {
     setCurrentTurn((prev) => (prev + 1) % sortedCharacters.length);
   };
 
-  const handleCharacterClick = () => {
-    if (characters.length > 0) {
-      nextTurn();
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-2">
+        <h1 className="text-4xl font-bold mb-2 flex items-center justify-center gap-3">
+          <Sword className="h-8 w-8" />
           MEvansCombat Tracker
         </h1>
         <p className="text-muted-foreground">
@@ -161,7 +156,7 @@ export default function Home() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-between gap-2 mb-6">
+      <div className="flex justify-end gap-2 mb-6">
         <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className="bg-background/80">
@@ -324,6 +319,10 @@ export default function Home() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          <Button onClick={nextTurn} disabled={characters.length === 0}>
+            Next Turn
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -345,7 +344,6 @@ export default function Home() {
                       onUpdateHp={updateHp.mutate}
                       onUpdateInitiative={updateInitiative.mutate}
                       onRemove={removeCharacter.mutate}
-                      onClick={handleCharacterClick}
                     />
                   ))}
                 </div>
@@ -370,7 +368,6 @@ export default function Home() {
                               onUpdateHp={updateHp.mutate}
                               onUpdateInitiative={updateInitiative.mutate}
                               onRemove={removeCharacter.mutate}
-                              onClick={handleCharacterClick}
                             />
                           ))}
                       </div>
@@ -395,7 +392,6 @@ export default function Home() {
                               onUpdateHp={updateHp.mutate}
                               onUpdateInitiative={updateInitiative.mutate}
                               onRemove={removeCharacter.mutate}
-                              onClick={handleCharacterClick}
                             />
                           ))}
                       </div>
@@ -417,30 +413,23 @@ function CharacterCard({
   onUpdateHp,
   onUpdateInitiative,
   onRemove,
-  onClick,
 }: {
   character: Character;
   isCurrentTurn: boolean;
   onUpdateHp: (data: { id: number; hp: number }) => void;
   onUpdateInitiative: (data: { id: number; initiative: number }) => void;
   onRemove: (id: number) => void;
-  onClick: () => void;
 }) {
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [maxHp, setMaxHp] = useState(character.maxHp);
+
   return (
     <div
-      className={`p-4 rounded-lg border group transition-all duration-200 ease-in-out hover:shadow-md hover:-translate-y-[2px] cursor-pointer ${
+      className={`p-4 rounded-lg border group transition-all duration-200 ease-in-out hover:shadow-md hover:-translate-y-[2px] ${
         isCurrentTurn
           ? "bg-primary/5 border-primary"
           : "bg-card hover:bg-card/80"
       }`}
-      onClick={onClick}
-      tabIndex={0}
-      role="button"
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Tab') {
-          onClick();
-        }
-      }}
     >
       <div className="flex items-center gap-4">
         <div className="flex-1 flex items-center gap-2">
@@ -455,7 +444,6 @@ function CharacterCard({
                 onUpdateInitiative({ id: character.id, initiative: value });
               }
             }}
-            onClick={(e) => e.stopPropagation()}
           />
           <div className="flex items-center gap-2">
             <Heart className="h-4 w-4 text-red-500" />
@@ -469,11 +457,10 @@ function CharacterCard({
                   onUpdateHp({ id: character.id, hp: value });
                 }
               }}
-              onClick={(e) => e.stopPropagation()}
             />
-            {character.maxHp && (
+            {maxHp && (
               <span className="text-sm text-muted-foreground">
-                /{character.maxHp}
+                /{maxHp}
               </span>
             )}
           </div>
@@ -482,10 +469,7 @@ function CharacterCard({
         <Button
           variant="ghost"
           size="icon"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(character.id);
-          }}
+          onClick={() => onRemove(character.id)}
           className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         >
           <Trash2 className="h-4 w-4" />
