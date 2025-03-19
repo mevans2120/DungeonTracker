@@ -439,9 +439,9 @@ function CharacterCard({
       }`}
     >
       <div className="flex items-center gap-4">
-        <div 
+        <div
           className={`w-3 h-3 rounded-full cursor-pointer transition-colors duration-200 ${
-            isCurrentTurn ? "bg-primary" : "bg-muted hover:bg-muted-foreground/50"
+            isCurrentTurn ? "bg-[#4ADE80]" : "bg-muted hover:bg-muted-foreground/50"
           }`}
           onClick={onSelect}
         />
