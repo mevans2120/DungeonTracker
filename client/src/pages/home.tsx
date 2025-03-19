@@ -52,11 +52,11 @@ import {
   Group,
   ChevronDown,
   Settings2,
+  Dice6,
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
-import d20Icon from "../assets/20-sided-die.png";
 
 export default function Home() {
   const { toast } = useToast();
@@ -490,7 +490,7 @@ function CharacterCard({
         <div className="flex-1 grid grid-cols-[1fr,auto,auto] items-center gap-6">
           <span className="text-lg font-bold">{character.name}</span>
           <div className="flex items-center gap-2">
-            <img src={d20Icon} alt="Initiative" className="w-5 h-5" />
+            <Dice6 className="h-5 w-5 text-muted-foreground" />
             <Input
               type="number"
               value={character.initiative}
