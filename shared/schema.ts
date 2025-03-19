@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, json, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -11,15 +11,15 @@ export const characters = pgTable("characters", {
   isNpc: boolean("is_npc").notNull().default(false),
 });
 
-// New table for tutorial content
+// Updated tutorial content table with proper timestamp fields
 export const tutorialContent = pgTable("tutorial_content", {
   id: serial("id").primaryKey(),
   stepId: integer("step_id").notNull(),
   title: text("title").notNull(),
   description: text("description").notNull(),
   content: json("content").notNull(),
-  createdAt: text("created_at").notNull(),
-  updatedAt: text("updated_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const insertCharacterSchema = createInsertSchema(characters)

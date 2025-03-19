@@ -71,14 +71,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTutorialContent(content: InsertTutorialContent): Promise<TutorialContent> {
-    const now = new Date().toISOString();
     const [tutorial] = await db
       .insert(tutorialContent)
-      .values({
-        ...content,
-        createdAt: now,
-        updatedAt: now,
-      })
+      .values(content)
       .returning();
     return tutorial;
   }
@@ -88,7 +83,7 @@ export class DatabaseStorage implements IStorage {
       .update(tutorialContent)
       .set({
         ...content,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
       })
       .where(eq(tutorialContent.id, id))
       .returning();
