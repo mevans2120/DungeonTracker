@@ -160,7 +160,7 @@ export default function Home() {
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setCurrentTurn((prev) =>
-          prev === 0 ? sortedCharacters.length - 1 : prev - 1
+          prev === 0 ? sortedCharacters.length - 1 : prev - 1,
         );
       }
     };
@@ -171,7 +171,7 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8 flex items-center flex-wrap gap-x-3 gap-y-1">
+      <div className="mb-8 flex items-end flex-wrap gap-x-3 gap-y-1">
         <div className="flex items-center gap-3">
           <Sword className="h-8 w-8" />
           <h1 className="text-4xl font-bold">Combat Tracker</h1>
@@ -201,9 +201,7 @@ export default function Home() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem
-                  onClick={() => setSortByInitiative(false)}
-                >
+                <DropdownMenuItem onClick={() => setSortByInitiative(false)}>
                   <SortAsc className="h-4 w-4 mr-2" />
                   Initiative Order
                 </DropdownMenuItem>
@@ -231,7 +229,10 @@ export default function Home() {
                   </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={form.control}
                       name="name"
@@ -300,7 +301,7 @@ export default function Home() {
                                 field.onChange(
                                   e.target.value
                                     ? parseInt(e.target.value)
-                                    : undefined
+                                    : undefined,
                                 )
                               }
                             />
@@ -406,9 +407,7 @@ export default function Home() {
                             <CharacterCard
                               key={char.id}
                               character={char}
-                              isCurrentTurn={
-                                currentCharacter?.id === char.id
-                              }
+                              isCurrentTurn={currentCharacter?.id === char.id}
                               onUpdateHp={updateHp.mutate}
                               onUpdateInitiative={updateInitiative.mutate}
                               onRemove={removeCharacter.mutate}
@@ -435,9 +434,7 @@ export default function Home() {
                             <CharacterCard
                               key={char.id}
                               character={char}
-                              isCurrentTurn={
-                                currentCharacter?.id === char.id
-                              }
+                              isCurrentTurn={currentCharacter?.id === char.id}
                               onUpdateHp={updateHp.mutate}
                               onUpdateInitiative={updateInitiative.mutate}
                               onRemove={removeCharacter.mutate}

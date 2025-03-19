@@ -23,8 +23,8 @@ import {
 const DEFAULT_TUTORIAL_STEPS = [
   {
     stepId: 0,
-    title: "Welcome to DungeonTracker!",
-    description: "This quick tutorial will show you how to manage combat in your D&D game.",
+    title: "Welcome to CombatTracker!",
+    description: "This is a tool for MEvans D&D sessions.",
     content: (
       <div className="space-y-4">
         <p>DungeonTracker helps you:</p>
