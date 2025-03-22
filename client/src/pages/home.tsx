@@ -172,7 +172,7 @@ export default function Home() {
   }, [sortedCharacters.length]);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-4xl pb-24">
       <div className="mb-8 flex items-end flex-wrap gap-x-3 gap-y-1">
         <div className="flex items-center gap-3">
           <CrossedSwordsIcon className="h-8 w-8" />
@@ -454,6 +454,40 @@ export default function Home() {
           )}
         </CardContent>
       </Card>
+
+      {/* Add the sticky bottom navigation */}
+      {sortedCharacters.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
+          <div className="container mx-auto max-w-4xl flex justify-between gap-4">
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() =>
+                setCurrentTurn(
+                  currentTurn === 0
+                    ? sortedCharacters.length - 1
+                    : currentTurn - 1,
+                )
+              }
+            >
+              <ChevronRight className="h-4 w-4 rotate-180 mr-2" />
+              Previous Turn
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() =>
+                setCurrentTurn((currentTurn + 1) % sortedCharacters.length)
+              }
+            >
+              Next Turn
+              <ChevronRight className="h-4 w-4 ml-2" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

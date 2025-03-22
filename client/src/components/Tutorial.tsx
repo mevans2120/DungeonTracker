@@ -33,7 +33,7 @@ const DEFAULT_TUTORIAL_STEPS = [
           <li>Manage character HP</li>
           <li>Keep combat flowing smoothly</li>
         </ul>
-        <p>But this is still a prototype, and we don't offer acounts yet!</p>
+        <p>But this is still a prototype, meant for desktop!</p>
       </div>
     ),
   },
@@ -76,35 +76,19 @@ const DEFAULT_TUTORIAL_STEPS = [
           <li>Highest initiative goes first</li>
           <li>PCs and NPCs are grouped separately</li>
           <li>The current turn is highlighted</li>
-          <li>Use "Next Turn" to advance combat</li>
+          <li>Use the up down arrow buttons</li>
         </ul>
       </div>
     ),
   },
   {
     stepId: 3,
-    title: "Managing HP",
-    description: "Keep track of damage and healing.",
-    content: (
-      <div className="space-y-4">
-        <p>For each character, you can:</p>
-        <ul className="list-disc pl-4 space-y-2">
-          <li>Type in the HP value directly</li>
-          <li>See current HP and max HP (if set)</li>
-          <li>Remove characters when they leave combat</li>
-        </ul>
-      </div>
-    ),
-  },
-  {
-    stepId: 4,
     title: "Ready to Play!",
     description: "You're all set to start tracking combat.",
     content: (
       <div className="space-y-4">
         <p>Quick tips:</p>
         <ul className="list-disc pl-4 space-y-2">
-          <li>Use Up and Down arrows to go through each turn</li>
           <li>Sort by order or by NPC / PC</li>
           <li>Remove individual characters as needed</li>
           <li>Click the help icon to reopen this tutorial</li>
