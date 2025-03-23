@@ -223,16 +223,17 @@ export default function Home() {
       <div className="mb-8 flex items-end justify-between gap-x-3 gap-y-1 px-4 sm:px-0">
         <div className="flex items-center gap-3">
           <CrossedSwordsIcon className="h-8 w-8" />
-          <h1 className="text-4xl font-bold">Combat Tracker</h1>
+          <div>
+            <h1 className="text-4xl font-bold">Combat Tracker</h1>
+            <p className="text-muted-foreground">
+              A place to keep order and dole damage
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <Tutorial />
         </div>
       </div>
-
-      <p className="text-muted-foreground mb-8 px-4 sm:px-0">
-        A place to keep order and dole damage
-      </p>
 
       <Card>
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
