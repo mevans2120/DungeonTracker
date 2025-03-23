@@ -219,24 +219,42 @@ export default function Home() {
   }, [sortedCharacters.length]);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl pb-24">
-      <div className="mb-8 flex items-end justify-between gap-x-3 gap-y-1">
+    <div className="container mx-auto px-0 sm:px-4 py-8 max-w-4xl pb-24">
+      <div className="mb-8 flex items-end justify-between gap-x-3 gap-y-1 px-4 sm:px-0">
         <div className="flex items-center gap-3">
           <CrossedSwordsIcon className="h-8 w-8" />
           <h1 className="text-4xl font-bold">Combat Tracker</h1>
         </div>
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <HelpCircle className="h-5 w-5" />
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <HelpCircle className="h-5 w-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Combat Tracker Help</DialogTitle>
+                <DialogDescription className="space-y-4">
+                  <p>Welcome to the D&D Combat Tracker! Here's how to use it:</p>
+                  <ul className="list-disc pl-4 space-y-2">
+                    <li>Add characters using the "Add to Combat" button</li>
+                    <li>Track initiative order and HP during combat</li>
+                    <li>Use arrow keys or buttons to navigate turns</li>
+                    <li>Edit characters by clicking the gear icon</li>
+                  </ul>
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
-      <p className="text-muted-foreground mb-8">
+      <p className="text-muted-foreground mb-8 px-4 sm:px-0">
         A place to keep order and dole damage
       </p>
 
@@ -767,7 +785,7 @@ function CharacterCard({
               }}
             />
             {character.maxHp && (
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground hidden sm:inline">
                 / {character.maxHp}
               </span>
             )}
