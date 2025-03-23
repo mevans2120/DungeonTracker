@@ -490,13 +490,47 @@ export default function Home() {
                         </FormItem>
                       )}
                     />
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={editCharacter.isPending}
-                    >
-                      Save Changes
-                    </Button>
+                    <div className="flex flex-col gap-2 pt-2">
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={editCharacter.isPending}
+                      >
+                        Save Changes
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            className="w-full"
+                          >
+                            Delete Character
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Character?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will remove the character from combat. This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => {
+                                if (editingCharacter) {
+                                  removeCharacter.mutate(editingCharacter.id);
+                                  setEditDialogOpen(false);
+                                }
+                              }}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </form>
                 </Form>
               </DialogContent>
@@ -729,20 +763,13 @@ function CharacterCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => onEdit(character)}
           >
             <Settings2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onRemove(character.id)}
-          >
-            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
