@@ -154,7 +154,7 @@ export function Tutorial() {
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-lg">
-          <Card>
+          <Card className="p-6">
             <CardHeader>
               <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
               <CardDescription>
