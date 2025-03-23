@@ -51,13 +51,13 @@ import {
   Group,
   ChevronDown,
   Settings2,
-  HelpCircle,
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { D20Icon } from "@/components/icons/D20Icon";
 import { CrossedSwordsIcon } from "@/components/icons/CrossedSwordsIcon";
+import { Tutorial } from "@/components/Tutorial"; // Changed to named import
 
 
 export default function Home() {
@@ -226,31 +226,7 @@ export default function Home() {
           <h1 className="text-4xl font-bold">Combat Tracker</h1>
         </div>
         <div className="flex items-center gap-4">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <HelpCircle className="h-5 w-5" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Combat Tracker Help</DialogTitle>
-                <DialogDescription className="space-y-4">
-                  <p>Welcome to the D&D Combat Tracker! Here's how to use it:</p>
-                  <ul className="list-disc pl-4 space-y-2">
-                    <li>Add characters using the "Add to Combat" button</li>
-                    <li>Track initiative order and HP during combat</li>
-                    <li>Use arrow keys or buttons to navigate turns</li>
-                    <li>Edit characters by clicking the gear icon</li>
-                  </ul>
-                </DialogDescription>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
+          <Tutorial />
         </div>
       </div>
 

@@ -148,9 +148,9 @@ export function Tutorial() {
           <Button
             variant="ghost"
             size="icon"
-            className="fixed bottom-4 right-4 rounded-full"
+            className="text-muted-foreground hover:text-foreground"
           >
-            <HelpCircle className="h-6 w-6" />
+            <HelpCircle className="h-5 w-5" />
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-lg">
