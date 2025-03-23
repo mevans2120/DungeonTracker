@@ -241,7 +241,7 @@ export default function Home() {
       </p>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <CardTitle>Players & NPCs</CardTitle>
             <DropdownMenu>
@@ -272,7 +272,7 @@ export default function Home() {
             </DropdownMenu>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="bg-black text-white">
@@ -528,7 +528,7 @@ export default function Home() {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction 
+                            <AlertDialogAction
                               onClick={() => {
                                 if (editingCharacter) {
                                   removeCharacter.mutate(editingCharacter.id);
