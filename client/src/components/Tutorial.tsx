@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { HelpCircle, X } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -154,15 +154,6 @@ export function Tutorial() {
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0">
-          <Button
-            className="absolute right-6 top-6 p-0"
-            variant="ghost"
-            size="icon"
-            onClick={() => setOpen(false)}
-          >
-            <X className="h-6 w-6" />
-            <span className="sr-only">Close</span>
-          </Button>
           <Card className="p-6">
             <CardHeader>
               <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
