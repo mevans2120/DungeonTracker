@@ -51,12 +51,14 @@ import {
   Group,
   ChevronDown,
   Settings2,
+  HelpCircle,
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Character, insertCharacterSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { D20Icon } from "@/components/icons/D20Icon";
 import { CrossedSwordsIcon } from "@/components/icons/CrossedSwordsIcon";
+
 
 
 export default function Home() {
@@ -219,15 +221,25 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl pb-24">
-      <div className="mb-8 flex items-end flex-wrap gap-x-3 gap-y-1">
+      <div className="mb-8 flex items-end justify-between gap-x-3 gap-y-1">
         <div className="flex items-center gap-3">
           <CrossedSwordsIcon className="h-8 w-8" />
           <h1 className="text-4xl font-bold">Combat Tracker</h1>
         </div>
-        <p className="text-muted-foreground">
-          A place to keep order and dole damage
-        </p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <HelpCircle className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
+
+      <p className="text-muted-foreground mb-8">
+        A place to keep order and dole damage
+      </p>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
