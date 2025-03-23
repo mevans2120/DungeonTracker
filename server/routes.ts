@@ -102,5 +102,22 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.patch("/api/characters/:id", async (req, res) => {
+    const result = insertCharacterSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ message: "Invalid character data" });
+    }
+
+    try {
+      const character = await storage.updateCharacter(
+        parseInt(req.params.id),
+        result.data
+      );
+      res.json(character);
+    } catch (error) {
+      res.status(404).json({ message: "Character not found" });
+    }
+  });
+
   return createServer(app);
 }

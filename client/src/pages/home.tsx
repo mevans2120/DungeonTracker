@@ -63,6 +63,8 @@ export default function Home() {
   const { toast } = useToast();
   const [currentTurn, setCurrentTurn] = useState(0);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
   const [sortByInitiative, setSortByInitiative] = useState(true);
 
   const { data: characters = [], isLoading } = useQuery<Character[]>({
@@ -149,6 +151,50 @@ export default function Home() {
 
   const onSubmit = (data: any) => {
     addCharacter.mutate(data);
+  };
+
+  const editForm = useForm({
+    resolver: zodResolver(insertCharacterSchema),
+    defaultValues: {
+      name: "",
+      initiative: undefined,
+      currentHp: undefined,
+      maxHp: undefined,
+      isNpc: false,
+    },
+  });
+
+  // Add the editCharacter mutation
+  const editCharacter = useMutation({
+    mutationFn: (data: any & { id: number }) =>
+      apiRequest("PATCH", `/api/characters/${data.id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
+      editForm.reset();
+      setEditDialogOpen(false);
+      setEditingCharacter(null);
+      toast({
+        title: "Character updated",
+        description: "The character has been updated successfully",
+      });
+    },
+  });
+
+  const handleEditCharacter = (character: Character) => {
+    setEditingCharacter(character);
+    editForm.reset({
+      name: character.name,
+      initiative: character.initiative,
+      currentHp: character.currentHp,
+      maxHp: character.maxHp,
+      isNpc: character.isNpc,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const onEditSubmit = (data: any) => {
+    if (!editingCharacter) return;
+    editCharacter.mutate({ ...data, id: editingCharacter.id });
   };
 
   // Add keyboard navigation
@@ -339,6 +385,123 @@ export default function Home() {
               </DialogContent>
             </Dialog>
 
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Character</DialogTitle>
+                  <DialogDescription>
+                    Edit the character's details
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...editForm}>
+                  <form
+                    onSubmit={editForm.handleSubmit(onEditSubmit)}
+                    className="space-y-4"
+                  >
+                    <FormField
+                      control={editForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Character name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editForm.control}
+                      name="initiative"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Initiative</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="Initiative roll"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editForm.control}
+                      name="currentHp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Current HP</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="Current hit points"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editForm.control}
+                      name="maxHp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Max HP (optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="Maximum hit points"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value
+                                    ? parseInt(e.target.value)
+                                    : undefined,
+                                )
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editForm.control}
+                      name="isNpc"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between">
+                          <FormLabel>NPC</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={editCharacter.isPending}
+                    >
+                      Save Changes
+                    </Button>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
@@ -389,6 +552,7 @@ export default function Home() {
                       onSelect={() =>
                         setCurrentTurn(sortedCharacters.indexOf(char))
                       }
+                      onEdit={handleEditCharacter}
                     />
                   ))}
                 </div>
@@ -416,6 +580,7 @@ export default function Home() {
                               onSelect={() =>
                                 setCurrentTurn(sortedCharacters.indexOf(char))
                               }
+                              onEdit={handleEditCharacter}
                             />
                           ))}
                       </div>
@@ -443,6 +608,7 @@ export default function Home() {
                               onSelect={() =>
                                 setCurrentTurn(sortedCharacters.indexOf(char))
                               }
+                              onEdit={handleEditCharacter}
                             />
                           ))}
                       </div>
@@ -498,12 +664,16 @@ function CharacterCard({
   onUpdateHp,
   onUpdateInitiative,
   onRemove,
+  onSelect,
+  onEdit,
 }: {
   character: Character;
   isCurrentTurn: boolean;
   onUpdateHp: (data: { id: number; hp: number }) => void;
   onUpdateInitiative: (data: { id: number; initiative: number }) => void;
   onRemove: (id: number) => void;
+  onSelect: () => void;
+  onEdit: (character: Character) => void;
 }) {
   return (
     <div
@@ -559,14 +729,22 @@ function CharacterCard({
           </div>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onRemove(character.id)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(character)}
+          >
+            <Settings2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onRemove(character.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

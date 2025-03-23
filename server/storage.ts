@@ -15,6 +15,7 @@ export interface IStorage {
   getTutorialContent(): Promise<TutorialContent[]>;
   createTutorialContent(content: InsertTutorialContent): Promise<TutorialContent>;
   updateTutorialContent(id: number, content: Partial<InsertTutorialContent>): Promise<TutorialContent>;
+  updateCharacter(id: number, character: InsertCharacter): Promise<Character>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -92,6 +93,18 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Tutorial content not found");
     }
     return tutorial;
+  }
+  async updateCharacter(id: number, character: InsertCharacter): Promise<Character> {
+    const [updated] = await db
+      .update(characters)
+      .set(character)
+      .where(eq(characters.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new Error("Character not found");
+    }
+    return updated;
   }
 }
 
