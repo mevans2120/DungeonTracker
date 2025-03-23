@@ -220,15 +220,13 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-0 sm:px-4 py-8 max-w-4xl pb-24">
-      <div className="mb-8 flex items-end justify-between gap-x-3 gap-y-1 px-4 sm:px-0">
+      <div className="mb-8 flex items-center justify-between gap-x-3 gap-y-1 px-4 sm:px-0">
         <div className="flex items-center gap-3">
           <CrossedSwordsIcon className="h-8 w-8" />
-          <div>
-            <h1 className="text-4xl font-bold">Combat Tracker</h1>
-            <p className="text-muted-foreground">
-              A place to keep order and dole damage
-            </p>
-          </div>
+          <h1 className="text-4xl font-bold">Combat Tracker</h1>
+          <p className="text-muted-foreground">
+            A place to keep order and dole damage
+          </p>
         </div>
         <div className="flex items-center gap-4">
           <Tutorial />
