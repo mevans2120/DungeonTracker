@@ -153,7 +153,7 @@ export function Tutorial() {
             <HelpCircle className="h-5 w-5" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-lg sm:pt-8 sm:px-8">
+        <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6">
           <Card className="p-6">
             <CardHeader>
               <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
