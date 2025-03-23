@@ -60,7 +60,6 @@ import { D20Icon } from "@/components/icons/D20Icon";
 import { CrossedSwordsIcon } from "@/components/icons/CrossedSwordsIcon";
 
 
-
 export default function Home() {
   const { toast } = useToast();
   const [currentTurn, setCurrentTurn] = useState(0);
