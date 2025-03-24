@@ -676,7 +676,7 @@ export default function Home() {
               }
             >
               <ChevronRight className="h-4 w-4 rotate-180 mr-2" />
-              Previous Turn
+              Previous
             </Button>
             <Button
               variant="outline"
@@ -686,7 +686,7 @@ export default function Home() {
                 setCurrentTurn((currentTurn + 1) % sortedCharacters.length)
               }
             >
-              Next Turn
+              Next
               <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
           </div>
