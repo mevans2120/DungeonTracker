@@ -4,6 +4,8 @@ import {
   Dialog,
   DialogContent,
   DialogTrigger,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
@@ -114,16 +116,17 @@ export function Tutorial() {
     },
   });
 
+  // Function to force close the dialog on Done click
   const handleFinish = () => {
     // Mark the tutorial as seen
     localStorage.setItem("hasSeenTutorial", "true");
-    // Close the dialog without resetting steps immediately
+    // Force close the dialog
     setOpen(false);
   };
-  
-  // Reset step when dialog closes (but only if not currently in the process of opening)
+
+  // Reset steps only when dialog is manually opened (not on first load)
   useEffect(() => {
-    if (!open) {
+    if (open && localStorage.getItem("hasSeenTutorial")) {
       setCurrentStep(0);
     }
   }, [open]);
@@ -176,6 +179,14 @@ export function Tutorial() {
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0 sm:border-0 w-[500px] h-auto">
+          {/* Hidden accessibility elements */}
+          <DialogTitle className="sr-only">
+            Tutorial Guide
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Step-by-step guide to using the Combat Tracker
+          </DialogDescription>
+          
           <Card className="p-6">
             <CardHeader>
               <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
@@ -195,7 +206,15 @@ export function Tutorial() {
                 Previous
               </Button>
               {isLastStep ? (
-                <Button onClick={handleFinish}>Done</Button>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    localStorage.setItem("hasSeenTutorial", "true");
+                    setOpen(false);
+                  }}
+                >
+                  Done
+                </Button>
               ) : (
                 <Button onClick={handleNext}>Next</Button>
               )}
