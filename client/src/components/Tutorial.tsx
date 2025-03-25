@@ -3,9 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -153,6 +150,21 @@ export function Tutorial() {
 
   return (
     <>
+      {/* Test Button - Not shown in production */}
+      {import.meta.env.DEV && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => {
+            localStorage.removeItem("hasSeenTutorial");
+            window.location.reload();
+          }}
+          className="text-xs mr-2"
+        >
+          Reset Tutorial
+        </Button>
+      )}
+      
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button
