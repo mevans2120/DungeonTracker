@@ -118,8 +118,8 @@ export function Tutorial() {
   });
 
   const handleFinish = () => {
-    localStorage.setItem("hasSeenTutorial", "true");
     setOpen(false);
+    localStorage.setItem("hasSeenTutorial", "true");
     setCurrentStep(0);
   };
 
@@ -144,45 +144,52 @@ export function Tutorial() {
   const isLastStep = currentStep === tutorialSteps.length - 1;
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <HelpCircle className="h-5 w-5" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0 sm:border-0 w-[500px]">
-          <Card className="p-6">
-            <CardHeader>
-              <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
-              <CardDescription>
-                {tutorialSteps[currentStep].description}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="max-h-[300px] overflow-y-auto">
-              {tutorialSteps[currentStep].content}
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 0}
-              >
-                Previous
-              </Button>
-              {isLastStep ? (
-                <Button onClick={handleFinish}>Done</Button>
-              ) : (
-                <Button onClick={handleNext}>Next</Button>
-              )}
-            </CardFooter>
-          </Card>
-        </DialogContent>
-      </Dialog>
-    </>
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          handleFinish();
+        } else {
+          setOpen(true);
+        }
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <HelpCircle className="h-5 w-5" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0 sm:border-0 w-[500px]">
+        <Card className="p-6">
+          <CardHeader>
+            <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
+            <CardDescription>
+              {tutorialSteps[currentStep].description}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="max-h-[300px] overflow-y-auto">
+            {tutorialSteps[currentStep].content}
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+            >
+              Previous
+            </Button>
+            {isLastStep ? (
+              <Button onClick={handleFinish}>Done</Button>
+            ) : (
+              <Button onClick={handleNext}>Next</Button>
+            )}
+          </CardFooter>
+        </Card>
+      </DialogContent>
+    </Dialog>
   );
 }
