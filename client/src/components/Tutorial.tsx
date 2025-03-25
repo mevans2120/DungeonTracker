@@ -43,8 +43,8 @@ const DEFAULT_TUTORIAL_STEPS = [
     description: "Start by adding your players and monsters to the combat.",
     content: (
       <div className="space-y-4">
-        <p>Click the "Add to Combat" button to open the character form.
-        For each character, enter:</p>
+        <p>Click the "Add to Combat" button to open the character form.</p>
+        <p>For each character, enter:</p>
         <ul className="list-disc pl-4 space-y-2">
           <li>
             <strong>Name:</strong> Character's name
@@ -100,6 +100,7 @@ const DEFAULT_TUTORIAL_STEPS = [
 
 export function Tutorial() {
   const [open, setOpen] = useState(() => {
+    // Only show tutorial on first visit
     return !localStorage.getItem("hasSeenTutorial");
   });
   const [currentStep, setCurrentStep] = useState(0);
@@ -118,8 +119,8 @@ export function Tutorial() {
 
   const handleFinish = () => {
     localStorage.setItem("hasSeenTutorial", "true");
-    setCurrentStep(0);
     setOpen(false);
+    setCurrentStep(0);
   };
 
   const handleNext = () => {
@@ -143,52 +144,45 @@ export function Tutorial() {
   const isLastStep = currentStep === tutorialSteps.length - 1;
 
   return (
-    <Dialog 
-      open={open} 
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          localStorage.setItem("hasSeenTutorial", "true");
-          setCurrentStep(0);
-          setOpen(false);
-        }
-      }}
-    >
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <HelpCircle className="h-5 w-5" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0 sm:border-0 w-[500px]">
-        <Card className="p-6">
-          <CardHeader>
-            <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
-            <CardDescription>
-              {tutorialSteps[currentStep].description}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="max-h-[300px] overflow-y-auto">
-            {tutorialSteps[currentStep].content}
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentStep === 0}
-            >
-              Previous
-            </Button>
-            {isLastStep ? (
-              <Button onClick={handleFinish}>Done</Button>
-            ) : (
-              <Button onClick={handleNext}>Next</Button>
-            )}
-          </CardFooter>
-        </Card>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <HelpCircle className="h-5 w-5" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0 sm:border-0 w-[500px]">
+          <Card className="p-6">
+            <CardHeader>
+              <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
+              <CardDescription>
+                {tutorialSteps[currentStep].description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="max-h-[300px] overflow-y-auto">
+              {tutorialSteps[currentStep].content}
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={currentStep === 0}
+              >
+                Previous
+              </Button>
+              {isLastStep ? (
+                <Button onClick={handleFinish}>Done</Button>
+              ) : (
+                <Button onClick={handleNext}>Next</Button>
+              )}
+            </CardFooter>
+          </Card>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
