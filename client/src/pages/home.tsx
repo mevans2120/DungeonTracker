@@ -730,14 +730,14 @@ function CharacterCard({
             isCurrentTurn ? `Current turn: ${character.name}` : undefined
           }
         />
-        <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr,auto,auto] gap-4 sm:gap-6 items-center">
+        <div className="flex-1 grid grid-cols-[1fr,auto,auto] gap-4 sm:gap-6 items-center">
           <span className="text-lg font-bold">{character.name}</span>
           <div className="flex items-center gap-2">
             <D20Icon className="h-5 w-5 text-muted-foreground" />
             <Input
               type="number"
-              value={character.initiative}
               className="w-16"
+              value={character.initiative}
               onChange={(e) => {
                 const value = parseInt(e.target.value);
                 if (!isNaN(value)) {
@@ -750,8 +750,8 @@ function CharacterCard({
             <Heart className="h-4 w-4 text-red-500" />
             <Input
               type="number"
-              value={character.currentHp}
               className="w-16"
+              value={character.currentHp}
               onChange={(e) => {
                 const value = parseInt(e.target.value);
                 if (!isNaN(value) && value >= 0) {
