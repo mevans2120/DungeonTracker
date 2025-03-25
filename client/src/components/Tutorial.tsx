@@ -43,8 +43,8 @@ const DEFAULT_TUTORIAL_STEPS = [
     description: "Start by adding your players and monsters to the combat.",
     content: (
       <div className="space-y-4">
-        <p>Click the "Add to Combat" button to open the character form.</p>
-        <p>For each character, enter:</p>
+        <p>Click the "Add to Combat" button to open the character form.
+        For each character, enter:</p>
         <ul className="list-disc pl-4 space-y-2">
           <li>
             <strong>Name:</strong> Character's name
@@ -100,7 +100,6 @@ const DEFAULT_TUTORIAL_STEPS = [
 
 export function Tutorial() {
   const [open, setOpen] = useState(() => {
-    // Only show tutorial on first visit
     return !localStorage.getItem("hasSeenTutorial");
   });
   const [currentStep, setCurrentStep] = useState(0);
@@ -118,9 +117,9 @@ export function Tutorial() {
   });
 
   const handleFinish = () => {
-    setOpen(false);
     localStorage.setItem("hasSeenTutorial", "true");
     setCurrentStep(0);
+    setOpen(false);
   };
 
   const handleNext = () => {
@@ -148,9 +147,9 @@ export function Tutorial() {
       open={open} 
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          handleFinish();
-        } else {
-          setOpen(true);
+          localStorage.setItem("hasSeenTutorial", "true");
+          setCurrentStep(0);
+          setOpen(false);
         }
       }}
     >
