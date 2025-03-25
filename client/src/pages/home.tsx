@@ -730,7 +730,7 @@ function CharacterCard({
             isCurrentTurn ? `Current turn: ${character.name}` : undefined
           }
         />
-        <div className="flex-1 grid grid-cols-[1fr,auto,auto] items-center gap-6">
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr,auto,auto] gap-4 sm:gap-6 items-center">
           <span className="text-lg font-bold">{character.name}</span>
           <div className="flex items-center gap-2">
             <D20Icon className="h-5 w-5 text-muted-foreground" />
@@ -766,7 +766,6 @@ function CharacterCard({
             )}
           </div>
         </div>
-
         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <Button
             variant="ghost"
