@@ -120,7 +120,8 @@ export function Tutorial() {
   const handleFinish = () => {
     localStorage.setItem("hasSeenTutorial", "true");
     setOpen(false);
-    setCurrentStep(0);
+    // Only reset the step after the dialog is closed
+    setTimeout(() => setCurrentStep(0), 300);
   };
 
   const handleNext = () => {
