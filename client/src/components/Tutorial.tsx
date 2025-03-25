@@ -163,7 +163,7 @@ export function Tutorial() {
                 {tutorialSteps[currentStep].description}
               </CardDescription>
             </CardHeader>
-            <CardContent className="h-[300px] overflow-y-auto">
+            <CardContent className="min-h-[300px] max-h-[300px] overflow-y-auto">
               {tutorialSteps[currentStep].content}
             </CardContent>
             <CardFooter className="flex justify-between">
