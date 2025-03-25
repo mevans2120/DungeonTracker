@@ -118,11 +118,18 @@ export function Tutorial() {
   });
 
   const handleFinish = () => {
+    // Mark the tutorial as seen
     localStorage.setItem("hasSeenTutorial", "true");
+    // Close the dialog without resetting steps immediately
     setOpen(false);
-    // Only reset the step after the dialog is closed
-    setTimeout(() => setCurrentStep(0), 300);
   };
+  
+  // Reset step when dialog closes (but only if not currently in the process of opening)
+  useEffect(() => {
+    if (!open) {
+      setCurrentStep(0);
+    }
+  }, [open]);
 
   const handleNext = () => {
     if (currentStep < tutorialSteps.length - 1) {
