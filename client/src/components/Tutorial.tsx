@@ -141,6 +141,8 @@ export function Tutorial() {
     return null;
   }
 
+  const isLastStep = currentStep === tutorialSteps.length - 1;
+
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
@@ -153,7 +155,7 @@ export function Tutorial() {
             <HelpCircle className="h-5 w-5" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0 sm:border-0">
+        <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0 sm:border-0 w-[500px]">
           <Card className="p-6">
             <CardHeader>
               <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
@@ -161,7 +163,9 @@ export function Tutorial() {
                 {tutorialSteps[currentStep].description}
               </CardDescription>
             </CardHeader>
-            <CardContent>{tutorialSteps[currentStep].content}</CardContent>
+            <CardContent className="max-h-[300px] overflow-y-auto">
+              {tutorialSteps[currentStep].content}
+            </CardContent>
             <CardFooter className="flex justify-between">
               <Button
                 variant="outline"
@@ -170,9 +174,11 @@ export function Tutorial() {
               >
                 Previous
               </Button>
-              <Button onClick={handleNext}>
-                {currentStep === tutorialSteps.length - 1 ? "Finish" : "Next"}
-              </Button>
+              {isLastStep ? (
+                <Button onClick={handleFinish}>Done</Button>
+              ) : (
+                <Button onClick={handleNext}>Next</Button>
+              )}
             </CardFooter>
           </Card>
         </DialogContent>
