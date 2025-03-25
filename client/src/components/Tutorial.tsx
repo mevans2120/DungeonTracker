@@ -155,7 +155,7 @@ export function Tutorial() {
             <HelpCircle className="h-5 w-5" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0 sm:border-0 w-[500px]">
+        <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0 sm:border-0 w-[500px] h-auto">
           <Card className="p-6">
             <CardHeader>
               <CardTitle>{tutorialSteps[currentStep].title}</CardTitle>
@@ -163,7 +163,7 @@ export function Tutorial() {
                 {tutorialSteps[currentStep].description}
               </CardDescription>
             </CardHeader>
-            <CardContent className="max-h-[300px] overflow-y-auto">
+            <CardContent className="h-[300px] overflow-y-auto">
               {tutorialSteps[currentStep].content}
             </CardContent>
             <CardFooter className="flex justify-between">
