@@ -153,21 +153,6 @@ export function Tutorial() {
 
   return (
     <>
-      {/* Test Button - Not shown in production */}
-      {import.meta.env.DEV && (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => {
-            localStorage.removeItem("hasSeenTutorial");
-            window.location.reload();
-          }}
-          className="text-xs mr-2"
-        >
-          Reset Tutorial
-        </Button>
-      )}
-      
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button
