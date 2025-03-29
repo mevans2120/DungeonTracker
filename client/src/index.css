@@ -13,7 +13,7 @@
   }
 
   :root[class="dark"] {
-    --border: 220 13% 35%; /* Lighter gray for dark mode strokes */
+    --border: 220 13% 18%; /* Darker gray for borders as shown in screenshot */
   }
 
   /* Icons gold color */
