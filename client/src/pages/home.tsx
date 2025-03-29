@@ -379,7 +379,7 @@ export default function Home() {
                     />
                     <Button
                       type="submit"
-                      className="w-full"
+                      className="w-full bg-[#DF0000] hover:bg-[#DF0000]/90 text-white"
                       disabled={addCharacter.isPending}
                     >
                       Add to Combat
@@ -666,7 +666,7 @@ export default function Home() {
             <Button
               variant="outline"
               size="lg"
-              className="w-full"
+              className="w-full bg-[#DF0000] hover:bg-[#DF0000]/90 text-white border-[#DF0000]"
               onClick={() =>
                 setCurrentTurn(
                   currentTurn === 0
@@ -681,7 +681,7 @@ export default function Home() {
             <Button
               variant="outline"
               size="lg"
-              className="w-full"
+              className="w-full bg-[#DF0000] hover:bg-[#DF0000]/90 text-white border-[#DF0000]"
               onClick={() =>
                 setCurrentTurn((currentTurn + 1) % sortedCharacters.length)
               }
