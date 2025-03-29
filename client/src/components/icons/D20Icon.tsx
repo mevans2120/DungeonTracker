@@ -1,4 +1,5 @@
 import { SVGProps } from "react";
+import { cn } from "@/lib/utils";
 
 export function D20Icon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -9,6 +10,7 @@ export function D20Icon(props: SVGProps<SVGSVGElement>) {
       viewBox="0 0 86 96"
       fill="none"
       stroke="none"
+      className={cn("text-[#FFD700]", props.className)}
       {...props}
     >
       <path

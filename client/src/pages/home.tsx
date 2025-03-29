@@ -733,7 +733,7 @@ function CharacterCard({
         <div className="flex-1 grid grid-cols-[1fr,auto,auto] gap-4 sm:gap-6 items-center">
           <span className="text-lg font-bold">{character.name}</span>
           <div className="flex items-center gap-2">
-            <D20Icon className="h-5 w-5 text-muted-foreground" />
+            <D20Icon className="h-5 w-5" />
             <Input
               type="number"
               className="w-16"
