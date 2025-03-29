@@ -11,6 +11,10 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 
+  :root[class="dark"] {
+    --border: 220 13% 35%; /* Lighter gray for dark mode strokes */
+  }
+
   /* Hide number input spinners */
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button {
