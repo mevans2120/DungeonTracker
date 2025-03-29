@@ -13,7 +13,12 @@
   }
 
   :root[class="dark"] {
-    --border: 220 13% 35%; /* Lighter gray for dark mode strokes */
+    --border: 51 100% 50%; /* Gold color for borders - FFD700 */
+  }
+
+  /* Icons gold color */
+  svg:not([class*="text-"]) {
+    color: #FFD700; /* Gold color for icons */
   }
 
   /* Hide number input spinners */
