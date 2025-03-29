@@ -5,7 +5,6 @@
 @layer base {
   * {
     @apply border-border;
-    border-width: 1.25px;
   }
 
   body {
