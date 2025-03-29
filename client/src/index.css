@@ -13,7 +13,7 @@
   }
 
   :root[class="dark"] {
-    --border: 51 100% 50%; /* Gold color for borders - FFD700 */
+    --border: 220 13% 35%; /* Lighter gray for dark mode strokes */
   }
 
   /* Icons gold color */
