@@ -717,7 +717,7 @@ function CharacterCard({
     <div
       className={`p-4 rounded-lg border group transition-all duration-200 ease-in-out hover:shadow-md hover:-translate-y-[2px] ${
         isCurrentTurn
-          ? "bg-primary/5 border-primary"
+          ? "bg-primary/5 border-[#FFD700] border-2"
           : "bg-card hover:bg-card/80"
       }`}
     >
