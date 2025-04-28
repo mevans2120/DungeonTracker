@@ -737,8 +737,8 @@ function CharacterCard({
             <Input
               type="number"
               className="w-16"
-              value={character.initiative}
-              onChange={(e) => {
+              defaultValue={character.initiative}
+              onBlur={(e) => {
                 const value = parseInt(e.target.value);
                 if (!isNaN(value)) {
                   onUpdateInitiative({ id: character.id, initiative: value });
