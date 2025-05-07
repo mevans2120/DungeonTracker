@@ -162,14 +162,26 @@ export function Tutorial() {
 
   return (
     <>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="text-muted-foreground hover:text-foreground"
-        onClick={handleOpenTutorial}
-      >
-        <HelpCircle className="h-5 w-5" />
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-foreground"
+          onClick={handleOpenTutorial}
+        >
+          <HelpCircle className="h-5 w-5" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            localStorage.clear();
+            window.location.reload();
+          }}
+        >
+          Clear Storage & Reload
+        </Button>
+      </div>
       
       {/* Separate Dialog from its trigger for better control */}
       <Dialog open={open} onOpenChange={handleOpenChange}>
