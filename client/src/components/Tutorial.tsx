@@ -98,11 +98,10 @@ const DEFAULT_TUTORIAL_STEPS = [
 ];
 
 export function Tutorial() {
-  const [open, setOpen] = useState(() => {
-    // Only show tutorial on first visit
-    const hasSeenTutorial = localStorage.getItem("hasSeenTutorial");
-    return hasSeenTutorial === null || hasSeenTutorial === "false";
-  });
+  // Initialize state based on localStorage 
+  const hasSeenTutorialInitially = localStorage.getItem("hasSeenTutorial") === "true";
+  const [open, setOpen] = useState(!hasSeenTutorialInitially);
+  const [manuallyOpened, setManuallyOpened] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
   const { data: tutorialSteps = DEFAULT_TUTORIAL_STEPS, isLoading } = useQuery({
@@ -117,23 +116,29 @@ export function Tutorial() {
     },
   });
 
-  // Function to force close the dialog on Done click
+  // Function to force close the dialog on Done click and mark as seen
   const handleFinish = () => {
-    // Mark the tutorial as seen
     localStorage.setItem("hasSeenTutorial", "true");
-    // Force close the dialog
     setOpen(false);
   };
 
-  // Reset steps only when dialog is manually opened (not on first load)
-  const prevOpenRef = useRef(open);
-  useEffect(() => {
-    // Only reset if the dialog was closed and is now being opened manually
-    if (open && !prevOpenRef.current && localStorage.getItem("hasSeenTutorial") === "true") {
-      setCurrentStep(0);
+  // Handle dialog open change
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    
+    // When opening the dialog manually
+    if (newOpen && !open) {
+      setManuallyOpened(true);
+      setCurrentStep(0); // Reset to first step when manually opened
     }
-    prevOpenRef.current = open;
-  }, [open]);
+  };
+
+  // Function to manually open the tutorial
+  const handleOpenTutorial = () => {
+    setManuallyOpened(true);
+    setCurrentStep(0);
+    setOpen(true);
+  };
 
   const handleNext = () => {
     if (currentStep < tutorialSteps.length - 1) {
@@ -157,16 +162,17 @@ export function Tutorial() {
 
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <HelpCircle className="h-5 w-5" />
-          </Button>
-        </DialogTrigger>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="text-muted-foreground hover:text-foreground"
+        onClick={handleOpenTutorial}
+      >
+        <HelpCircle className="h-5 w-5" />
+      </Button>
+      
+      {/* Separate Dialog from its trigger for better control */}
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0 sm:border-0 w-[500px] h-auto">
           {/* Hidden accessibility elements */}
           <DialogTitle className="sr-only">
