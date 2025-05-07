@@ -162,15 +162,6 @@ const TutorialManager = {
     this._notifySubscribers();
   },
   
-  // Clear storage for testing
-  clearStorage() {
-    localStorage.removeItem("hasSeenTutorial");
-    this._hasSeenTutorial = false;
-    this._isOpen = true;
-    this._currentStep = 0;
-    this._notifySubscribers();
-  },
-  
   // Subscribe to changes
   subscribe(callback: Function) {
     this._subscribers.push(callback);
@@ -226,26 +217,14 @@ export function Tutorial() {
   
   return (
     <>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-foreground"
-          onClick={() => TutorialManager.openTutorial()}
-        >
-          <HelpCircle className="h-5 w-5" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            TutorialManager.clearStorage();
-            window.location.reload();
-          }}
-        >
-          Clear Storage & Reload
-        </Button>
-      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="text-muted-foreground hover:text-foreground"
+        onClick={() => TutorialManager.openTutorial()}
+      >
+        <HelpCircle className="h-5 w-5" />
+      </Button>
       
       {/* Render the dialog */}
       <Dialog 
