@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
-  DialogTrigger,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
@@ -97,13 +96,103 @@ const DEFAULT_TUTORIAL_STEPS = [
   },
 ];
 
-export function Tutorial() {
-  // Initialize state based on localStorage 
-  const hasSeenTutorialInitially = localStorage.getItem("hasSeenTutorial") === "true";
-  const [open, setOpen] = useState(!hasSeenTutorialInitially);
-  const [manuallyOpened, setManuallyOpened] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
+// Create a lightweight global tutorial state manager
+// This approach avoids issues with React's component lifecycle, hooks dependency arrays,
+// and multiple re-renders by keeping the tutorial state outside of React's state management
+const TutorialManager = {
+  // State variables
+  _isOpen: false,
+  _currentStep: 0,
+  _hasSeenTutorial: false,
+  _subscribers: [] as Function[],
+  
+  // Initialize
+  init() {
+    this._hasSeenTutorial = localStorage.getItem("hasSeenTutorial") === "true";
+    this._isOpen = !this._hasSeenTutorial;
+    this._currentStep = 0;
+  },
+  
+  // Check if tutorial should be shown
+  shouldShowTutorial() {
+    return this._isOpen;
+  },
+  
+  // Get current step
+  getCurrentStep() {
+    return this._currentStep;
+  },
+  
+  // Move to next step
+  nextStep() {
+    if (this._currentStep < DEFAULT_TUTORIAL_STEPS.length - 1) {
+      this._currentStep++;
+      this._notifySubscribers();
+    } else {
+      this.finishTutorial();
+    }
+  },
+  
+  // Move to previous step
+  previousStep() {
+    if (this._currentStep > 0) {
+      this._currentStep--;
+      this._notifySubscribers();
+    }
+  },
+  
+  // Open tutorial
+  openTutorial() {
+    this._isOpen = true;
+    this._currentStep = 0;
+    this._notifySubscribers();
+  },
+  
+  // Close tutorial without marking as seen
+  closeTutorial() {
+    this._isOpen = false;
+    this._notifySubscribers();
+  },
+  
+  // Finish tutorial (close and mark as seen)
+  finishTutorial() {
+    localStorage.setItem("hasSeenTutorial", "true");
+    this._hasSeenTutorial = true;
+    this._isOpen = false;
+    this._notifySubscribers();
+  },
+  
+  // Clear storage for testing
+  clearStorage() {
+    localStorage.removeItem("hasSeenTutorial");
+    this._hasSeenTutorial = false;
+    this._isOpen = true;
+    this._currentStep = 0;
+    this._notifySubscribers();
+  },
+  
+  // Subscribe to changes
+  subscribe(callback: Function) {
+    this._subscribers.push(callback);
+    return () => {
+      this._subscribers = this._subscribers.filter(cb => cb !== callback);
+    };
+  },
+  
+  // Notify all subscribers
+  _notifySubscribers() {
+    this._subscribers.forEach(callback => callback());
+  }
+};
 
+// Initialize the tutorial manager
+TutorialManager.init();
+
+export function Tutorial() {
+  // Use state to trigger re-renders when the tutorial state changes
+  const [, setRenderKey] = useState(0);
+  
+  // Get tutorial data from API
   const { data: tutorialSteps = DEFAULT_TUTORIAL_STEPS, isLoading } = useQuery({
     queryKey: ["/api/tutorial"],
     queryFn: async () => {
@@ -115,51 +204,26 @@ export function Tutorial() {
       return data.length > 0 ? data : DEFAULT_TUTORIAL_STEPS;
     },
   });
-
-  // Function to force close the dialog on Done click and mark as seen
-  const handleFinish = () => {
-    localStorage.setItem("hasSeenTutorial", "true");
-    setOpen(false);
-  };
-
-  // Handle dialog open change
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
+  
+  // Subscribe to tutorial state changes
+  useState(() => {
+    const unsubscribe = TutorialManager.subscribe(() => {
+      setRenderKey(prev => prev + 1);
+    });
     
-    // When opening the dialog manually
-    if (newOpen && !open) {
-      setManuallyOpened(true);
-      setCurrentStep(0); // Reset to first step when manually opened
-    }
-  };
-
-  // Function to manually open the tutorial
-  const handleOpenTutorial = () => {
-    setManuallyOpened(true);
-    setCurrentStep(0);
-    setOpen(true);
-  };
-
-  const handleNext = () => {
-    if (currentStep < tutorialSteps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleFinish();
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
+    // Clean up subscription on unmount
+    return unsubscribe;
+  });
+  
   if (isLoading) {
     return null;
   }
-
+  
+  // Get current tutorial state
+  const isOpen = TutorialManager.shouldShowTutorial();
+  const currentStep = TutorialManager.getCurrentStep();
   const isLastStep = currentStep === tutorialSteps.length - 1;
-
+  
   return (
     <>
       <div className="flex items-center gap-2">
@@ -167,7 +231,7 @@ export function Tutorial() {
           variant="ghost"
           size="icon"
           className="text-muted-foreground hover:text-foreground"
-          onClick={handleOpenTutorial}
+          onClick={() => TutorialManager.openTutorial()}
         >
           <HelpCircle className="h-5 w-5" />
         </Button>
@@ -175,7 +239,7 @@ export function Tutorial() {
           variant="outline"
           size="sm"
           onClick={() => {
-            localStorage.clear();
+            TutorialManager.clearStorage();
             window.location.reload();
           }}
         >
@@ -183,8 +247,13 @@ export function Tutorial() {
         </Button>
       </div>
       
-      {/* Separate Dialog from its trigger for better control */}
-      <Dialog open={open} onOpenChange={handleOpenChange}>
+      {/* Render the dialog */}
+      <Dialog 
+        open={isOpen} 
+        onOpenChange={(open) => {
+          if (!open) TutorialManager.closeTutorial();
+        }}
+      >
         <DialogContent className="max-w-lg sm:pt-8 sm:px-8 sm:pb-6 border-0 sm:border-0 w-[500px] h-auto">
           {/* Hidden accessibility elements */}
           <DialogTitle className="sr-only">
@@ -207,17 +276,17 @@ export function Tutorial() {
             <CardFooter className="flex justify-between">
               <Button
                 variant="outline"
-                onClick={handlePrevious}
+                onClick={() => TutorialManager.previousStep()}
                 disabled={currentStep === 0}
               >
                 Previous
               </Button>
               {isLastStep ? (
-                <Button onClick={handleFinish}>
+                <Button onClick={() => TutorialManager.finishTutorial()}>
                   Done
                 </Button>
               ) : (
-                <Button onClick={handleNext}>Next</Button>
+                <Button onClick={() => TutorialManager.nextStep()}>Next</Button>
               )}
             </CardFooter>
           </Card>
