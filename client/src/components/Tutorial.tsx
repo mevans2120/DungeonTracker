@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -100,7 +100,8 @@ const DEFAULT_TUTORIAL_STEPS = [
 export function Tutorial() {
   const [open, setOpen] = useState(() => {
     // Only show tutorial on first visit
-    return !localStorage.getItem("hasSeenTutorial");
+    const hasSeenTutorial = localStorage.getItem("hasSeenTutorial");
+    return hasSeenTutorial === null || hasSeenTutorial === "false";
   });
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -125,10 +126,13 @@ export function Tutorial() {
   };
 
   // Reset steps only when dialog is manually opened (not on first load)
+  const prevOpenRef = useRef(open);
   useEffect(() => {
-    if (open && localStorage.getItem("hasSeenTutorial")) {
+    // Only reset if the dialog was closed and is now being opened manually
+    if (open && !prevOpenRef.current && localStorage.getItem("hasSeenTutorial") === "true") {
       setCurrentStep(0);
     }
+    prevOpenRef.current = open;
   }, [open]);
 
   const handleNext = () => {
@@ -191,13 +195,7 @@ export function Tutorial() {
                 Previous
               </Button>
               {isLastStep ? (
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    localStorage.setItem("hasSeenTutorial", "true");
-                    setOpen(false);
-                  }}
-                >
+                <Button onClick={handleFinish}>
                   Done
                 </Button>
               ) : (
