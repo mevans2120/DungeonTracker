@@ -1,5 +1,5 @@
 import express from "express";
-import { registerRoutes } from "../server/routes";
+import { registerRoutes } from "./routes";
 import { type VercelRequest, type VercelResponse } from "@vercel/node";
 
 // Create express app
@@ -19,8 +19,22 @@ async function initializeRoutes() {
 
 // Vercel serverless function handler
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  await initializeRoutes();
-  
-  // Convert Vercel request to Express request format
-  app(req as any, res as any);
+  try {
+    await initializeRoutes();
+    
+    // Handle the request with Express
+    return new Promise((resolve, reject) => {
+      app(req as any, res as any, (err: any) => {
+        if (err) {
+          console.error('API Error:', err);
+          reject(err);
+        } else {
+          resolve(undefined);
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Handler Error:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: error.message });
+  }
 } 
