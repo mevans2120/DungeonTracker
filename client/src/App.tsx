@@ -20,7 +20,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router />
       <Toaster />
-      <Analytics />
+      <Analytics debug={true} />
     </QueryClientProvider>
   );
 }
