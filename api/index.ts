@@ -3,64 +3,23 @@ import { type VercelRequest, type VercelResponse } from "@vercel/node";
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { pgTable, text, serial, integer, boolean, json, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 
-// Define database tables inline
-const characters = pgTable("characters", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  initiative: integer("initiative").notNull(),
-  currentHp: integer("current_hp").notNull(),
-  maxHp: integer("max_hp"),
-  isNpc: boolean("is_npc").notNull().default(false),
-});
+// Import shared schema and types
+import {
+  characters,
+  tutorialContent,
+  insertCharacterSchema,
+  insertTutorialContentSchema,
+  type Character,
+  type TutorialContent,
+  type InsertCharacter,
+  type InsertTutorialContent
+} from '../shared/schema';
 
-const tutorialContent = pgTable("tutorial_content", {
-  id: serial("id").primaryKey(),
-  stepId: integer("step_id").notNull(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  content: json("content").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-// Define schemas inline
-const insertCharacterSchema = createInsertSchema(characters)
-  .pick({
-    name: true,
-    initiative: true,
-    currentHp: true,
-    maxHp: true,
-    isNpc: true,
-  })
-  .extend({
-    initiative: z.number().min(1).max(30),
-    currentHp: z.number().min(0),
-    maxHp: z.number().min(1).optional(),
-    isNpc: z.boolean().default(false),
-  });
-
-const insertTutorialContentSchema = createInsertSchema(tutorialContent)
-  .pick({
-    stepId: true,
-    title: true,
-    description: true,
-    content: true,
-  })
-  .extend({
-    stepId: z.number().min(0),
-    content: z.any(),
-  });
-
-// Define types inline
-type InsertCharacter = z.infer<typeof insertCharacterSchema>;
-type Character = typeof characters.$inferSelect;
-type TutorialContent = typeof tutorialContent.$inferSelect;
-type InsertTutorialContent = z.infer<typeof insertTutorialContentSchema>;
+// Import storage interface and create a Vercel-specific implementation
+import { type IStorage } from '../server/storage';
+import { eq } from "drizzle-orm";
 
 neonConfig.webSocketConstructor = ws;
 
@@ -73,8 +32,8 @@ if (!process.env.DATABASE_URL) {
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle({ client: pool, schema: { characters, tutorialContent } });
 
-// Storage class
-class DatabaseStorage {
+// Vercel-specific storage implementation with connection pooling optimization
+class VercelDatabaseStorage implements IStorage {
   async getCharacters(): Promise<Character[]> {
     return await db.select().from(characters).orderBy(characters.isNpc, characters.initiative);
   }
@@ -128,7 +87,12 @@ class DatabaseStorage {
   async createTutorialContent(content: InsertTutorialContent): Promise<TutorialContent> {
     const [tutorial] = await db
       .insert(tutorialContent)
-      .values(content)
+      .values({
+        stepId: content.stepId,
+        title: content.title,
+        description: content.description,
+        content: content.content,
+      })
       .returning();
     return tutorial;
   }
@@ -163,14 +127,23 @@ class DatabaseStorage {
   }
 }
 
-const storage = new DatabaseStorage();
+const storage = new VercelDatabaseStorage();
 
 // Create express app
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Register API routes inline
+// Improved parameter validation helper
+function validateIdParam(id: string): number {
+  const parsed = parseInt(id, 10);
+  if (isNaN(parsed) || parsed <= 0) {
+    throw new Error("Invalid ID parameter");
+  }
+  return parsed;
+}
+
+// Register API routes with improved error handling and validation
 let routesRegistered = false;
 
 async function registerRoutes() {
@@ -191,7 +164,10 @@ async function registerRoutes() {
     try {
       const result = insertCharacterSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ message: "Invalid character data" });
+        return res.status(400).json({
+          message: "Invalid character data",
+          errors: result.error.errors
+        });
       }
       const character = await storage.createCharacter(result.data);
       res.status(201).json(character);
@@ -203,46 +179,61 @@ async function registerRoutes() {
 
   app.patch("/api/characters/:id/hp", async (req, res) => {
     try {
+      const id = validateIdParam(req.params.id);
       const schema = z.object({ currentHp: z.number().min(0) });
       const result = schema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ message: "Invalid HP value" });
+        return res.status(400).json({
+          message: "Invalid HP value",
+          errors: result.error.errors
+        });
       }
 
-      const character = await storage.updateCharacterHp(
-        parseInt(req.params.id),
-        result.data.currentHp
-      );
+      const character = await storage.updateCharacterHp(id, result.data.currentHp);
       res.json(character);
     } catch (error) {
-      res.status(404).json({ message: "Character not found" });
+      if (error.message === "Invalid ID parameter") {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(404).json({ message: "Character not found" });
+      }
     }
   });
 
   app.patch("/api/characters/:id/initiative", async (req, res) => {
     try {
+      const id = validateIdParam(req.params.id);
       const schema = z.object({ initiative: z.number().min(1).max(30) });
       const result = schema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ message: "Invalid initiative value" });
+        return res.status(400).json({
+          message: "Invalid initiative value",
+          errors: result.error.errors
+        });
       }
 
-      const character = await storage.updateCharacterInitiative(
-        parseInt(req.params.id),
-        result.data.initiative
-      );
+      const character = await storage.updateCharacterInitiative(id, result.data.initiative);
       res.json(character);
     } catch (error) {
-      res.status(404).json({ message: "Character not found" });
+      if (error.message === "Invalid ID parameter") {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(404).json({ message: "Character not found" });
+      }
     }
   });
 
   app.delete("/api/characters/:id", async (req, res) => {
     try {
-      await storage.deleteCharacter(parseInt(req.params.id));
+      const id = validateIdParam(req.params.id);
+      await storage.deleteCharacter(id);
       res.status(204).send();
     } catch (error) {
-      res.status(404).json({ message: "Character not found" });
+      if (error.message === "Invalid ID parameter") {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(404).json({ message: "Character not found" });
+      }
     }
   });
 
@@ -271,7 +262,10 @@ async function registerRoutes() {
     try {
       const result = insertTutorialContentSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ message: "Invalid tutorial content" });
+        return res.status(400).json({
+          message: "Invalid tutorial content",
+          errors: result.error.errors
+        });
       }
       const content = await storage.createTutorialContent(result.data);
       res.status(201).json(content);
@@ -283,35 +277,45 @@ async function registerRoutes() {
 
   app.patch("/api/tutorial/:id", async (req, res) => {
     try {
+      const id = validateIdParam(req.params.id);
       const result = insertTutorialContentSchema.partial().safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ message: "Invalid tutorial content" });
+        return res.status(400).json({
+          message: "Invalid tutorial content",
+          errors: result.error.errors
+        });
       }
 
-      const content = await storage.updateTutorialContent(
-        parseInt(req.params.id),
-        result.data
-      );
+      const content = await storage.updateTutorialContent(id, result.data);
       res.json(content);
     } catch (error) {
-      res.status(404).json({ message: "Tutorial content not found" });
+      if (error.message === "Invalid ID parameter") {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(404).json({ message: "Tutorial content not found" });
+      }
     }
   });
 
   app.patch("/api/characters/:id", async (req, res) => {
     try {
+      const id = validateIdParam(req.params.id);
       const result = insertCharacterSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ message: "Invalid character data" });
+        return res.status(400).json({
+          message: "Invalid character data",
+          errors: result.error.errors
+        });
       }
 
-      const character = await storage.updateCharacter(
-        parseInt(req.params.id),
-        result.data
-      );
+      const character = await storage.updateCharacter(id, result.data);
       res.json(character);
     } catch (error) {
-      res.status(404).json({ message: "Character not found" });
+      if (error.message === "Invalid ID parameter") {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(404).json({ message: "Character not found" });
+      }
     }
   });
 

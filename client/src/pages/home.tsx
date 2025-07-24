@@ -91,9 +91,9 @@ export default function Home() {
     resolver: zodResolver(insertCharacterSchema),
     defaultValues: {
       name: "",
-      initiative: undefined,
-      currentHp: undefined,
-      maxHp: undefined,
+      initiative: "" as any,
+      currentHp: "" as any,
+      maxHp: "" as any,
       isNpc: false,
     },
   });
@@ -158,9 +158,9 @@ export default function Home() {
     resolver: zodResolver(insertCharacterSchema),
     defaultValues: {
       name: "",
-      initiative: undefined,
-      currentHp: undefined,
-      maxHp: undefined,
+      initiative: "" as any,
+      currentHp: "" as any,
+      maxHp: "" as any,
       isNpc: false,
     },
   });
@@ -185,9 +185,9 @@ export default function Home() {
     setEditingCharacter(character);
     editForm.reset({
       name: character.name,
-      initiative: character.initiative,
-      currentHp: character.currentHp,
-      maxHp: character.maxHp,
+      initiative: character.initiative as any,
+      currentHp: character.currentHp as any,
+      maxHp: character.maxHp as any,
       isNpc: character.isNpc,
     });
     setEditDialogOpen(true);
