@@ -4,16 +4,23 @@
   "functions": {
     "api/index.ts": {
       "maxDuration": 30
+    },
+    "api/seed.ts": {
+      "maxDuration": 30
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index.ts"
+      "source": "/api/seed",
+      "destination": "/api/seed.ts"
     },
     {
-      "src": "/(.*)",
-      "dest": "/dist/public/$1"
+      "source": "/api/(.*)",
+      "destination": "/api/index.ts"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 } 
