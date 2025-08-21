@@ -36,25 +36,12 @@ interface IStorage {
   updateCharacter(id: number, character: InsertCharacter): Promise<Character>;
 }
 
-// Initialize database with error handling
-let pool: Pool;
-let db: any;
+// Configure neon
+neonConfig.webSocketConstructor = ws;
 
-try {
-  neonConfig.webSocketConstructor = ws;
-
-  if (!process.env.DATABASE_URL) {
-    throw new Error(
-      "DATABASE_URL must be set. Did you forget to provision a database?",
-    );
-  }
-
-  pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  db = drizzle({ client: pool, schema: { characters, tutorialContent } });
-} catch (error: any) {
-  console.error('Database initialization error:', error);
-  throw error;
-}
+// Database will be initialized in the handler
+let pool: Pool | null = null;
+let db: any = null;
 
 // Vercel-specific storage implementation with connection pooling optimization
 class VercelDatabaseStorage implements IStorage {
@@ -169,6 +156,17 @@ function validateIdParam(id: string): number {
 
 // Register API routes with improved error handling and validation
 let routesRegistered = false;
+
+async function initializeDatabase() {
+  if (db) return; // Already initialized
+  
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
+  }
+  
+  pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  db = drizzle({ client: pool, schema: { characters, tutorialContent } });
+}
 
 async function registerRoutes() {
   if (routesRegistered) return;
@@ -383,8 +381,8 @@ async function registerRoutes() {
       // Insert test characters
       const inserted = await db.insert(characters).values(testCharacters).returning();
       
-      const heroes = inserted.filter(c => !c.isNpc);
-      const npcs = inserted.filter(c => c.isNpc);
+      const heroes = inserted.filter((c: Character) => !c.isNpc);
+      const npcs = inserted.filter((c: Character) => c.isNpc);
       
       res.status(200).json({
         success: true,
@@ -393,8 +391,8 @@ async function registerRoutes() {
           total: inserted.length,
           heroes: heroes.length,
           npcs: npcs.length,
-          highestInitiative: Math.max(...inserted.map(c => c.initiative)),
-          totalHp: inserted.reduce((sum, c) => sum + c.currentHp, 0)
+          highestInitiative: Math.max(...inserted.map((c: Character) => c.initiative)),
+          totalHp: inserted.reduce((sum: number, c: Character) => sum + c.currentHp, 0)
         }
       });
     } catch (error: any) {
@@ -425,6 +423,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
   
   try {
+    // Initialize database if needed
+    await initializeDatabase();
     await registerRoutes();
     
     // Handle the request with Express
