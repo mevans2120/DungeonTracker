@@ -14,7 +14,7 @@ import {
   type TutorialContent,
   type InsertCharacter,
   type InsertTutorialContent
-} from '../shared/schema';
+} from './_shared/schema';
 
 import { eq } from "drizzle-orm";
 

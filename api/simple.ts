@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import { characters } from '../shared/schema';
+import { characters } from './_shared/schema';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Set CORS headers
