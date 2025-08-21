@@ -8,6 +8,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/characters",
+      "destination": "/api/characters.ts"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/index.ts"
     },
