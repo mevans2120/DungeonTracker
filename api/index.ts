@@ -17,20 +17,44 @@ import {
   type InsertTutorialContent
 } from '../shared/schema';
 
-// Import storage interface and create a Vercel-specific implementation
-import { type IStorage } from '../server/storage';
 import { eq } from "drizzle-orm";
 
-neonConfig.webSocketConstructor = ws;
-
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+// Storage interface definition
+interface IStorage {
+  // Character methods
+  getCharacters(): Promise<Character[]>;
+  createCharacter(character: InsertCharacter): Promise<Character>;
+  updateCharacterHp(id: number, currentHp: number): Promise<Character>;
+  updateCharacterInitiative(id: number, initiative: number): Promise<Character>;
+  deleteCharacter(id: number): Promise<void>;
+  deleteAllCharacters(): Promise<void>;
+  
+  // Tutorial content methods
+  getTutorialContent(): Promise<TutorialContent[]>;
+  createTutorialContent(content: InsertTutorialContent): Promise<TutorialContent>;
+  updateTutorialContent(id: number, content: Partial<InsertTutorialContent>): Promise<TutorialContent>;
+  updateCharacter(id: number, character: InsertCharacter): Promise<Character>;
 }
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle({ client: pool, schema: { characters, tutorialContent } });
+// Initialize database with error handling
+let pool: Pool;
+let db: any;
+
+try {
+  neonConfig.webSocketConstructor = ws;
+
+  if (!process.env.DATABASE_URL) {
+    throw new Error(
+      "DATABASE_URL must be set. Did you forget to provision a database?",
+    );
+  }
+
+  pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  db = drizzle({ client: pool, schema: { characters, tutorialContent } });
+} catch (error: any) {
+  console.error('Database initialization error:', error);
+  throw error;
+}
 
 // Vercel-specific storage implementation with connection pooling optimization
 class VercelDatabaseStorage implements IStorage {
@@ -387,6 +411,19 @@ async function registerRoutes() {
 
 // Vercel serverless function handler
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // Handle OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  console.log('Request:', req.method, req.url);
+  console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+  
   try {
     await registerRoutes();
     
@@ -401,8 +438,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
       });
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Handler Error:', error);
-    res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    console.error('Stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Internal Server Error', 
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 } 
