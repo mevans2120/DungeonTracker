@@ -99,7 +99,10 @@ export default function Home() {
   });
 
   const addCharacter = useMutation({
-    mutationFn: (data: any) => apiRequest("POST", "/api/characters", data),
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/characters", data);
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
       form.reset();
@@ -109,26 +112,40 @@ export default function Home() {
         description: "The character has been added to combat",
       });
     },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to add character",
+        description: error?.message || "Please check your input and try again",
+        variant: "destructive",
+      });
+    },
   });
 
   const updateHp = useMutation({
-    mutationFn: ({ id, hp }: { id: number; hp: number }) =>
-      apiRequest("PATCH", `/api/characters/${id}/hp`, { currentHp: hp }),
+    mutationFn: async ({ id, hp }: { id: number; hp: number }) => {
+      const response = await apiRequest("PATCH", `/api/characters/${id}/hp`, { currentHp: hp });
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
     },
   });
 
   const updateInitiative = useMutation({
-    mutationFn: ({ id, initiative }: { id: number; initiative: number }) =>
-      apiRequest("PATCH", `/api/characters/${id}/initiative`, { initiative }),
+    mutationFn: async ({ id, initiative }: { id: number; initiative: number }) => {
+      const response = await apiRequest("PATCH", `/api/characters/${id}/initiative`, { initiative });
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
     },
   });
 
   const removeCharacter = useMutation({
-    mutationFn: (id: number) => apiRequest("DELETE", `/api/characters/${id}`),
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/characters/${id}`);
+      return response;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
       toast({
@@ -139,7 +156,10 @@ export default function Home() {
   });
 
   const resetCombat = useMutation({
-    mutationFn: () => apiRequest("DELETE", "/api/characters"),
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", "/api/characters");
+      return response;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
       setCurrentTurn(0);
@@ -151,7 +171,25 @@ export default function Home() {
   });
 
   const onSubmit = (data: any) => {
-    addCharacter.mutate(data);
+    // Ensure numbers are properly converted and validated
+    const sanitizedData = {
+      ...data,
+      initiative: Number(data.initiative) || 0,
+      currentHp: Number(data.currentHp) || 0,
+      maxHp: data.maxHp ? Number(data.maxHp) : undefined,
+    };
+    
+    // Validate required fields
+    if (!sanitizedData.name || sanitizedData.initiative <= 0 || sanitizedData.currentHp < 0) {
+      toast({
+        title: "Invalid input",
+        description: "Please fill in all required fields with valid values",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    addCharacter.mutate(sanitizedData);
   };
 
   const editForm = useForm({
@@ -167,8 +205,10 @@ export default function Home() {
 
   // Add the editCharacter mutation
   const editCharacter = useMutation({
-    mutationFn: (data: any & { id: number }) =>
-      apiRequest("PATCH", `/api/characters/${data.id}`, data),
+    mutationFn: async (data: any & { id: number }) => {
+      const response = await apiRequest("PATCH", `/api/characters/${data.id}`, data);
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
       editForm.reset();
@@ -177,6 +217,13 @@ export default function Home() {
       toast({
         title: "Character updated",
         description: "The character has been updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update character",
+        description: error?.message || "Please check your input and try again",
+        variant: "destructive",
       });
     },
   });
@@ -195,7 +242,26 @@ export default function Home() {
 
   const onEditSubmit = (data: any) => {
     if (!editingCharacter) return;
-    editCharacter.mutate({ ...data, id: editingCharacter.id });
+    
+    // Ensure numbers are properly converted and validated
+    const sanitizedData = {
+      ...data,
+      initiative: Number(data.initiative) || 0,
+      currentHp: Number(data.currentHp) || 0,
+      maxHp: data.maxHp ? Number(data.maxHp) : undefined,
+    };
+    
+    // Validate required fields
+    if (!sanitizedData.name || sanitizedData.initiative <= 0 || sanitizedData.currentHp < 0) {
+      toast({
+        title: "Invalid input",
+        description: "Please fill in all required fields with valid values",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    editCharacter.mutate({ ...sanitizedData, id: editingCharacter.id });
   };
 
   // Add keyboard navigation
@@ -309,9 +375,10 @@ export default function Home() {
                               type="number"
                               placeholder="Initiative roll"
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(parseInt(e.target.value))
-                              }
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(value === "" ? "" : parseInt(value) || 0);
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
@@ -329,9 +396,10 @@ export default function Home() {
                               type="number"
                               placeholder="Current hit points"
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(parseInt(e.target.value))
-                              }
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(value === "" ? "" : parseInt(value) || 0);
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
@@ -349,13 +417,12 @@ export default function Home() {
                               type="number"
                               placeholder="Maximum hit points"
                               {...field}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                const value = e.target.value;
                                 field.onChange(
-                                  e.target.value
-                                    ? parseInt(e.target.value)
-                                    : undefined,
-                                )
-                              }
+                                  value === "" ? undefined : parseInt(value) || undefined
+                                );
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
@@ -426,9 +493,10 @@ export default function Home() {
                               type="number"
                               placeholder="Initiative roll"
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(parseInt(e.target.value))
-                              }
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(value === "" ? "" : parseInt(value) || 0);
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
@@ -446,9 +514,10 @@ export default function Home() {
                               type="number"
                               placeholder="Current hit points"
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(parseInt(e.target.value))
-                              }
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(value === "" ? "" : parseInt(value) || 0);
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
@@ -466,13 +535,12 @@ export default function Home() {
                               type="number"
                               placeholder="Maximum hit points"
                               {...field}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                const value = e.target.value;
                                 field.onChange(
-                                  e.target.value
-                                    ? parseInt(e.target.value)
-                                    : undefined,
-                                )
-                              }
+                                  value === "" ? undefined : parseInt(value) || undefined
+                                );
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
