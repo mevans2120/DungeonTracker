@@ -5,6 +5,15 @@ import { insertCharacterSchema, insertTutorialContentSchema } from "@shared/sche
 import { z } from "zod";
 
 export async function registerRoutes(app: Express) {
+  // Health check endpoint
+  app.get("/api/health", async (_req, res) => {
+    res.json({ 
+      status: 'ok',
+      database: process.env.DATABASE_URL ? 'configured' : 'not configured',
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // Existing character routes
   app.get("/api/characters", async (_req, res) => {
     const characters = await storage.getCharacters();

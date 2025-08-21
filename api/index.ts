@@ -149,12 +149,21 @@ let routesRegistered = false;
 async function registerRoutes() {
   if (routesRegistered) return;
 
+  // Health check endpoint
+  app.get("/api/health", async (_req, res) => {
+    res.json({ 
+      status: 'ok',
+      database: process.env.DATABASE_URL ? 'configured' : 'not configured',
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // Character routes
   app.get("/api/characters", async (_req, res) => {
     try {
       const characters = await storage.getCharacters();
       res.json(characters);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Get characters error:', error);
       res.status(500).json({ error: 'Failed to get characters' });
     }
@@ -171,7 +180,7 @@ async function registerRoutes() {
       }
       const character = await storage.createCharacter(result.data);
       res.status(201).json(character);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Create character error:', error);
       res.status(500).json({ error: 'Failed to create character' });
     }
@@ -191,7 +200,7 @@ async function registerRoutes() {
 
       const character = await storage.updateCharacterHp(id, result.data.currentHp);
       res.json(character);
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === "Invalid ID parameter") {
         res.status(400).json({ message: error.message });
       } else {
@@ -214,7 +223,7 @@ async function registerRoutes() {
 
       const character = await storage.updateCharacterInitiative(id, result.data.initiative);
       res.json(character);
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === "Invalid ID parameter") {
         res.status(400).json({ message: error.message });
       } else {
@@ -228,7 +237,7 @@ async function registerRoutes() {
       const id = validateIdParam(req.params.id);
       await storage.deleteCharacter(id);
       res.status(204).send();
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === "Invalid ID parameter") {
         res.status(400).json({ message: error.message });
       } else {
@@ -241,7 +250,7 @@ async function registerRoutes() {
     try {
       await storage.deleteAllCharacters();
       res.status(204).send();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Delete all characters error:', error);
       res.status(500).json({ error: 'Failed to delete characters' });
     }
@@ -252,7 +261,7 @@ async function registerRoutes() {
     try {
       const content = await storage.getTutorialContent();
       res.json(content);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Get tutorial error:', error);
       res.status(500).json({ error: 'Failed to get tutorial content' });
     }
@@ -269,7 +278,7 @@ async function registerRoutes() {
       }
       const content = await storage.createTutorialContent(result.data);
       res.status(201).json(content);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Create tutorial error:', error);
       res.status(500).json({ error: 'Failed to create tutorial content' });
     }
@@ -288,7 +297,7 @@ async function registerRoutes() {
 
       const content = await storage.updateTutorialContent(id, result.data);
       res.json(content);
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === "Invalid ID parameter") {
         res.status(400).json({ message: error.message });
       } else {
@@ -310,7 +319,7 @@ async function registerRoutes() {
 
       const character = await storage.updateCharacter(id, result.data);
       res.json(character);
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === "Invalid ID parameter") {
         res.status(400).json({ message: error.message });
       } else {
@@ -364,7 +373,7 @@ async function registerRoutes() {
           totalHp: inserted.reduce((sum, c) => sum + c.currentHp, 0)
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Seed error:', error);
       res.status(500).json({ 
         error: 'Failed to seed database',

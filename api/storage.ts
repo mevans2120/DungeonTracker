@@ -74,7 +74,10 @@ export class DatabaseStorage implements IStorage {
   async createTutorialContent(content: InsertTutorialContent): Promise<TutorialContent> {
     const [tutorial] = await db
       .insert(tutorialContent)
-      .values(content)
+      .values({
+        ...content,
+        content: content.content || {}
+      })
       .returning();
     return tutorial;
   }
