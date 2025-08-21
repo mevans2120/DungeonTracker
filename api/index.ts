@@ -2,7 +2,6 @@ import express from "express";
 import { type VercelRequest, type VercelResponse } from "@vercel/node";
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
 import { z } from "zod";
 
 // Import shared schema and types
@@ -36,8 +35,8 @@ interface IStorage {
   updateCharacter(id: number, character: InsertCharacter): Promise<Character>;
 }
 
-// Configure neon
-neonConfig.webSocketConstructor = ws;
+// Neon configuration - Vercel handles WebSocket automatically
+// No need to set webSocketConstructor in Vercel environment
 
 // Database will be initialized in the handler
 let pool: Pool | null = null;
